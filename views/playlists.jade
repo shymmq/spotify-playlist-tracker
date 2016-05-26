@@ -1,6 +1,10 @@
 extends layout
 block content
-	div(class="page-header") Playlists
-	ul
+	ul(class='list-group')
 		each item in items
-			button(type='button' class='btn btn-primary' href='/songs?userid='+ item.owner.id +'&id='+item.id)=item.name
+			script(type="text/javascript").
+				var images="#{item.images[0].url}"
+				console.log(images)
+			li(class='list-group-item')
+				img(src=item.images[0].url class="thumb")
+				a(class="title" href='/songs?userid='+ item.owner.id +'&id='+item.id)=item.name

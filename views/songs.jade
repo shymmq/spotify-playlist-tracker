@@ -1,8 +1,5 @@
-html
-  head
-    title= "ala"
-  body
-    h1=total
-    ul
-      each item in items
-        li=item.track.name 
+extends layout
+block content
+	ul(class='list-group')
+		each item in items
+			li(class='list-group-item')=item.track.name

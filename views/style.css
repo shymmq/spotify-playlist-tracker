@@ -1,0 +1,27 @@
+.list-group {
+    padding-left: 50px;
+    margin-bottom: 20px;
+    margin-top: 40px;
+}
+.navbar-header{
+    padding-left: 50px;
+}
+.list-group-item{
+    padding: 5px 10px;
+}
+.thumb{
+    width: 40px;
+  	margin-right: 10px;
+  	border-radius: 20px;
+}
+.title{
+	  font-family: Circular,Helvetica,Arial,sans-serif;
+    font-size: 24px;
+    vertical-align: middle;
+}
+@font-face {
+  font-family: "Circular";
+  font-style: normal;
+  font-weight: 500;
+  src: url("https://sp-bootstrap.global.ssl.fastly.net/7.2.0/fonts/circular-medium.woff2") format("woff2"), url("https://sp-bootstrap.global.ssl.fastly.net/7.2.0/fonts/circular-medium.woff") format("woff");
+}

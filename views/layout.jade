@@ -8,10 +8,9 @@ html
 				meta(name='description', content='')
 				meta(name='keywords', content='')
 			link(rel='stylesheet', href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css")
-			| <style>
-			| body { padding-top: 60px; }
-			| </style>
+			link(rel='stylesheet' type="text/css" href="style.css")
 			script(src='//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js')
 	body
+		nav(class="navbar navbar-inverse" role="navigation"): div(class="container-fluid"): div(class="navbar-header"): a(class="navbar-brand" href="/") Playlist Tracker
 		block content
 

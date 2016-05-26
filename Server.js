@@ -40,22 +40,6 @@ router.use(function(req, res, next) {
 });
 
 router.get("/", function(req, res) {
-    res.sendFile(path + "index.html");
-});
-
-router.get("/spotify", function(req, res) {
-
-    var scopes = 'user-read-private user-read-email playlist-read-private playlist-modify-public playlist-modify-private playlist-read-collaborative'
-    res.redirect('https://accounts.spotify.com/authorize?' +
-        querystring.stringify({
-            response_type: 'code',
-            configclient_id: configclient_id,
-            scope: scopes,
-            redirect_uri: redirect_uri
-        }));
-});
-
-router.get("/playlists", function(req, res) {
     getToken(function(access_token) {
         var authOptions = {
             url: 'https://api.spotify.com/v1/me/playlists',
@@ -69,6 +53,18 @@ router.get("/playlists", function(req, res) {
             res.render('playlists', body);
         });
     })
+});
+
+router.get("/spotify", function(req, res) {
+
+    var scopes = 'user-read-private user-read-email playlist-read-private playlist-modify-public playlist-modify-private playlist-read-collaborative'
+    res.redirect('https://accounts.spotify.com/authorize?' +
+        querystring.stringify({
+            response_type: 'code',
+            configclient_id: configclient_id,
+            scope: scopes,
+            redirect_uri: redirect_uri
+        }));
 });
 
 router.get("/songs", function(req, res) {
@@ -88,8 +84,8 @@ router.get("/songs", function(req, res) {
     })
 });
 
-router.get("/contact", function(req, res) {
-    res.sendFile(path + "contact.html");
+router.get("/style.css", function(req, res) {
+    res.sendFile(path + "style.css");
 });
 
 router.get("/callback2", function(req, res) {
