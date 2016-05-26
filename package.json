@@ -1,0 +1,15 @@
+{
+  "name": "website-using-express",
+  "version": "0.0.1",
+  "scripts": {
+    "start": "node Server.js"
+  },
+  "dependencies": {
+    "express": "latest",
+    "iconv": "^2.2.0",
+    "iconv-lite": "^0.4.13",
+    "jade": "^1.11.0",
+    "jade-bootstrap": "^1.0.4",
+    "pug": "^2.0.0-alpha8"
+  }
+}

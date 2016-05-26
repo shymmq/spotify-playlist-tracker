@@ -1,0 +1,6 @@
+extends layout
+block content
+	div(class="page-header") Playlists
+	ul
+		each item in items
+			button(type='button' class='btn btn-primary' href='/songs?userid='+ item.owner.id +'&id='+item.id)=item.name
