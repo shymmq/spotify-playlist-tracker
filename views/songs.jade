@@ -1,5 +1,29 @@
 extends layout
 block content
-	ul(class='list-group')
-		each item in items
-			li(class='list-group-item')=item.track.name
+	//- table
+	//- 	each item,index in items
+	//- 		tr
+	//- 			td
+	//- 				p(id="index")=index
+	//- 			td
+	//- 				p(class="title" id="song-name")=item.track.name
+	//- 		// li(class='list-group-item')=item.track.name
+	table(class="full-screen-table")
+		each item,index in items
+			tr(class="full-screen-table-row")
+				td(class="thumb-item")
+					p(class="index")=index+1+'.'
+				td(class='title-item')
+					div(id="title-div")
+						p(class="two-line-title")=item.track.name
+						-
+							var artist_name=""
+						each artist,index in item.track.artists
+							-
+								if(index>0){
+									artist_name+=', '
+								}
+								artist_name+=artist.name;
+						p(class="subtitle")=artist_name
+						//- p(class="title") Title
+						//- p(class="subtitle") Subtitle
