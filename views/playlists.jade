@@ -1,10 +1,16 @@
 extends layout
 block content
-	ul(class='list-group')
+	//- ul(class='list-group')
+	table(class="full-screen-table")
 		each item in items
-			script(type="text/javascript").
-				var images="#{item.images[0].url}"
-				console.log(images)
-			li(class='list-group-item')
-				img(src=item.images[0].url class="thumb")
-				a(class="title" href='/songs?userid='+ item.owner.id +'&id='+item.id)=item.name
+			tr(class="full-screen-table-row")
+				td(class="thumb-item")
+					img(src=item.images[0].url class="thumb")
+				td(class='title-item')
+					div(id="title-div")
+						p(class="two-line-title"): a(href='/songs?userid='+ item.owner.id +'&id='+item.id)=item.name
+						//-TODO zamienić na link z nazwą autora
+						p(class="subtitle"): a(href='/')=item.owner.id
+				script(type="text/javascript").
+					var name="#{item.owner.display_name}"
+					console.log(name)
