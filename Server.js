@@ -8,53 +8,55 @@ var request = require('request');
 var url = require('url');
 var querystring = require('querystring');
 var iconv = require('iconv-lite');
-var redirect_uri = 'http://localhost:3000/callback'; // Your redirect uri
 var config = require('./config');
+var SpotifyWebApi = require('spotify-web-api-node');
+var redirect_uri = 'http://localhost:3000/callback';
+var spotifyApi = new SpotifyWebApi({
+    clientId: config.client_id,
+    clientSecret: config.client_secret,
+    redirectUri: redirect_uri
+});
+spotifyApi.setRefreshToken(config.refresh_token);
+
 app.set('view engine', 'jade');
 
-function getToken(callback) {
-    var authOptions = {
-        url: 'https://accounts.spotify.com/api/token',
-        headers: {
-            'Authorization': 'Basic ' + (new Buffer(config.client_id + ':' + config.client_secret).toString('base64'))
-        },
-        form: {
-            grant_type: 'refresh_token',
-            refresh_token: config.refresh_token
-        },
-        json: true
-
-    };
-
-    request.post(authOptions, function (error, response, body) {
-        if (!error && response.statusCode === 200) {
-            var access_token = body.access_token;
-            console.log(access_token);
-            callback(access_token);
-
-        }
-    });
+function refreshAccessToken(callback) {
+    spotifyApi.refreshAccessToken()
+        .then(function (data) {
+            spotifyApi.setAccessToken(data.body.access_token);
+            callback();
+        }, function (err) {
+            console.log('Could not refresh access token', err);
+        });
 }
+
+router.get("/", function (req, res) {
+    refreshAccessToken(function () {
+        spotifyApi.getUserPlaylists(config.user_id)
+            .then(function (data) {
+                console.log('Retrieved playlists', data.body);
+                res.render('playlists', data.body);
+            }, function (err) {
+                console.log('Something went wrong!', err);
+            });
+    });
+});
+
+router.get("/songs", function (req, res) {
+    refreshAccessToken(function () {
+        spotifyApi.getPlaylistTracks(req.query.userid, req.query.id)
+            .then(function (data) {
+                res.render('songs', data.body);
+                console.log('The playlist contains these tracks', data.body);
+            }, function (err) {
+                console.log('Something went wrong!', err);
+            });
+    });
+});
 
 router.use(function (req, res, next) {
     console.log("/" + req.method);
     next();
-});
-
-router.get("/", function (req, res) {
-    getToken(function (access_token) {
-        var authOptions = {
-            url: 'https://api.spotify.com/v1/me/playlists',
-            headers: {
-                'Authorization': 'Bearer ' + access_token
-            },
-            json: true
-        };
-        request.get(authOptions, function (error, response, body) {
-            console.log(body);
-            res.render('playlists', body);
-        });
-    });
 });
 
 router.get("/spotify", function (req, res) {
@@ -69,30 +71,8 @@ router.get("/spotify", function (req, res) {
         }));
 });
 
-router.get("/songs", function (req, res) {
-    var requestURL = 'https://api.spotify.com/v1/users/' + req.query.userid + '/playlists/' + req.query.id + '/tracks';
-    console.log(requestURL);
-    getToken(function (access_token) {
-        var authOptions = {
-            url: requestURL,
-            headers: {
-                'Authorization': 'Bearer ' + access_token
-            },
-            json: true
-        };
-        request.get(authOptions, function (error, response, body) {
-            res.render('songs', body);
-        });
-    });
-});
-
 router.get("/style.css", function (req, res) {
     res.sendFile(path + "style.css");
-});
-
-router.get("/callback2", function (req, res) {
-    res.sendFile(path + "contact.html");
-    console.log(req.query);
 });
 
 router.get("/callback", function (req, res) {
@@ -118,8 +98,6 @@ router.get("/callback", function (req, res) {
     });
 
 });
-
-
 
 app.use("/", router);
 
