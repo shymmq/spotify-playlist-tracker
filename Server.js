@@ -7,51 +7,36 @@ var path = __dirname + '/views/';
 var request = require('request');
 var url = require('url');
 var querystring = require('querystring');
-var iconv = require('iconv-lite');
 var config = require('./config');
-var SpotifyWebApi = require('spotify-web-api-node');
+var spotify = require('./spotify');
+var retriever = require('./loader');
+
 var redirect_uri = 'http://localhost:3000/callback';
-var spotifyApi = new SpotifyWebApi({
-    clientId: config.client_id,
-    clientSecret: config.client_secret,
-    redirectUri: redirect_uri
-});
-spotifyApi.setRefreshToken(config.refresh_token);
 
 app.set('view engine', 'jade');
 
-function refreshAccessToken(callback) {
-    spotifyApi.refreshAccessToken()
-        .then(function (data) {
-            spotifyApi.setAccessToken(data.body.access_token);
-            callback();
-        }, function (err) {
-            console.log('Could not refresh access token', err);
-        });
-}
+retriever.load();
 
 router.get("/", function (req, res) {
-    refreshAccessToken(function () {
-        spotifyApi.getUserPlaylists(config.user_id)
-            .then(function (data) {
-                console.log('Retrieved playlists', data.body);
-                res.render('playlists', data.body);
-            }, function (err) {
-                console.log('Something went wrong!', err);
-            });
-    });
+    spotify.refreshAccessToken
+        .then(function () {
+            return spotify.api.getUserPlaylists(config.user_id);
+        })
+        .then(function (data) {
+            console.log('Retrieved playlists', data.body);
+            res.render('playlists', data.body);
+        });
 });
 
 router.get("/songs", function (req, res) {
-    refreshAccessToken(function () {
-        spotifyApi.getPlaylistTracks(req.query.userid, req.query.id)
-            .then(function (data) {
-                res.render('songs', data.body);
-                console.log('The playlist contains these tracks', data.body);
-            }, function (err) {
-                console.log('Something went wrong!', err);
-            });
-    });
+    spotify.refreshAccessToken
+        .then(function () {
+            return spotify.api.getPlaylistTracks(req.query.userid, req.query.id);
+        })
+        .then(function (data) {
+            res.render('songs', data.body);
+            console.log('The playlist contains these tracks', data.body);
+        });
 });
 
 router.use(function (req, res, next) {
