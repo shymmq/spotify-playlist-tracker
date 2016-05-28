@@ -13,10 +13,35 @@ var heart = heartbeats.createHeart(1000);
 function insertPlaylists(playlists) {
     MongoClient.connect(config.db_url, function (err, db) {
         assert.equal(null, err);
-        db.collection('playlists').insertMany(playlists, function (err, r) {
-            assert.equal(null, err);
-            console.log("inserted: " + r.insertedCount);
+        var collection = db.collection('playlists'),
+            conditions = playlists.map(function (playlist) {
+                return {
+                    'id': playlist.id,
+                    'snapshot_id': playlist.snapshot_id
+                };
+            }),
+            result = collection.find({
+                $or: conditions
+            }, {
+                id: 1
+            });
+        result.map(function (u) {
+            return u.id;
+        }).toArray(function (err, ids) {
+            var filtered = playlists.filter(function (playlist) {
+                return ids.indexOf(playlist.id) === -1;
+            });
+            if (filtered.length > 0) {
+                collection.insertMany(filtered, function (err, r) {
+                    console.log("inserted: " + r.insertedCount);
+                });
+            } else {
+                console.log("nothing to insert");
+            }
+
         });
+
+        //        
     });
 }
 
