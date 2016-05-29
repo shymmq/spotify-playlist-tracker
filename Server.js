@@ -8,72 +8,80 @@ var request = require('request');
 var Promise = require('promise');
 var url = require('url');
 var querystring = require('querystring');
-var iconv = require('iconv-lite');
+var MongoClient = require('mongodb').MongoClient;
 var config = require('./config');
-var SpotifyWebApi = require('spotify-web-api-node');
+var spotify = require('./spotify');
+var loader = require('./loader');
+
 var redirect_uri = 'http://localhost:3000/callback';
-var spotifyApi = new SpotifyWebApi({
-    clientId: config.client_id,
-    clientSecret: config.client_secret,
-    redirectUri: redirect_uri
-});
-spotifyApi.setRefreshToken(config.refresh_token);
 
 app.set('view engine', 'jade');
 
-function refreshAccessToken(callback) {
-    spotifyApi.refreshAccessToken()
-        .then(function(data) {
-            spotifyApi.setAccessToken(data.body.access_token);
-            callback();
-        }, function(err) {
-            console.log('Could not refresh access token', err);
-        });
+//loader.load();
+function appendUsername(playlist){
+    return spotify.api.getUser(playlist.owner.id).then(function(response){
+        playlist.owner.display_name = response.body.display_name;
+        return playlist;
+    });
 }
-
 router.get("/", function(req, res) {
     // res.sendFile(path + "404.html");
     console.log("Starting retrieving playlists");
-    refreshAccessToken(function() {
-        spotifyApi.getUserPlaylists(config.user_id)
-            .then(function(data) {
-
-                    var promises = [];
-                    var combined_data = {items:[]};
-                    console.log('Retrieved playlists', data.body.items);
-                    for (var playlist in data.body.items) {
-                        promises.push(spotifyApi.getUser(data.body.items[playlist].owner.id))
-                    }
-                    console.log("Waiting for download: "+ promises)
-                    Promise.all(promises).then(function(results) {
-                        for (var i in results){
-                            combined_data.items.push({'playlist': data.body.items[i] ,'playlist_owner': results[i].body})
-                        }
-                        // console.log("Data: " + JSON.stringify(combined_data))
-                        res.render('playlists',combined_data)
-
-                    }, function(err) {
-                        console.log("error",err);
-                    })
-                },
-                function(err) {
-                    console.log('Something went wrong!', err);
-                }
-            );
-
-        
+    spotify.refreshAccessToken.then(function(){
+        return spotify.api.getUserPlaylists(config.user_id);
+    }).then(function(response){
+        return Promise.all(response.body.items.map(appendUsername));
+    }).then(function(playlists){
+        res.render('playlists',{items: playlists});
     });
+                    // var promises = [];
+                    // var combined_data = {items:[]};
+                    // console.log('Retrieved playlists', data.body.items);
+                    // for (var playlist in data.body.items) {
+                    //     promises.push(spotifyApi.getUser(data.body.items[playlist].owner.id))
+                    // }
+                    // console.log("Waiting for download: "+ promises)
+                    // Promise.all(promises).then(function(results) {
+                    //     for (var i in results){
+                    //         combined_data.items.push({'playlist': data.body.items[i] ,'playlist_owner': results[i].body})
+                    //     }
+                    //     // console.log("Data: " + JSON.stringify(combined_data))
+                    //     res.render('playlists',combined_data)
+
+                    // }, function(err) {
+                    //     console.log("error",err);
+                    // })
 });
-router.get("/songs", function(req, res) {
-    refreshAccessToken(function() {
-        spotifyApi.getPlaylistTracks(req.query.userid, req.query.id)
-            .then(function(data) {
-                res.render('songs', data.body);
-                console.log('The playlist contains these tracks', data.body);
-            }, function(err) {
-                console.log('Something went wrong!', err);
-            });
-    });
+router.get("/songs", function (req, res) {
+    spotify.refreshAccessToken
+        .then(function () {
+            return spotify.api.getPlaylistTracks(req.query.userid, req.query.id);
+        })
+        .then(function (data) {
+            res.render('songs', data.body);
+            console.log('The playlist contains these tracks', data.body);
+        });
+});
+
+router.get("/search", function (req, res) {
+    var query = req.query.query;
+    console.log("searching for ", query);
+    return MongoClient.connect(config.db_url)
+        .then(function (db) {
+            return db.collection("playlist-names").find({
+                names: {
+                    $regex: query,
+                    $options: 'i'
+                }
+            }).toArray();
+        })
+        .then(function (results) {
+            console.log(results);
+            res.setHeader('Content-Type', 'application/json');
+            res.send(results);
+        }, function (err) {
+            console.log(err);
+        });
 });
 
 router.use(function(req, res, next) {
@@ -118,7 +126,6 @@ router.get("/callback", function(req, res) {
         console.log(error);
         console.log(response);
     });
-
 });
 
 app.use("/", router);

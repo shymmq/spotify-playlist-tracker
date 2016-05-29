@@ -5,12 +5,12 @@ block content
 		each item in items
 			tr(class="full-screen-table-row")
 				td(class="thumb-item")
-					img(src=item.playlist.images[0].url class="thumb")
+					img(src=item.images[0].url class="thumb")
 				td(class='title-item')
 					div(id="title-div")
-						p(class="two-line-title"): a(href='/songs?userid='+ item.playlist_owner.id +'&id='+item.playlist.id)=item.playlist.name
+						p(class="two-line-title"): a(href='/songs?userid='+ item.owner.id +'&id='+item.id)=item.name
 						//-TODO zamienić na link z nazwą autora
-						p(class="subtitle"): a(href='/')=item.playlist_owner.display_name
+						p(class="subtitle"): a(href='/')=item.owner.display_name
 				script(type="text/javascript").
-					var name="#{item.playlist_owner.display_name}"
+					var name="#{item.owner.display_name}"
 					console.log(name)
