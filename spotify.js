@@ -4,6 +4,7 @@ var Promise = require('promise');
 var config = require('./config');
 var SpotifyWebApi = require('spotify-web-api-node');
 
+var queue = [];
 
 var spotifyApi = new SpotifyWebApi({
     clientId: config.client_id,
@@ -24,4 +25,6 @@ module.exports.refreshAccessToken = new Promise(function (resolve, reject) {
             reject();
         });
 });
+
+
 module.exports.api = spotifyApi;
