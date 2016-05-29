@@ -32,6 +32,34 @@ function filterNew(playlists) {
         });
 }
 
+function transformPlaylist(playlist) {
+    var transformed = {};
+    transformed.id = playlist.id;
+    transformed.name = playlist.name;
+    transformed.snapshot_id = playlist.snapshot_id;
+    transformed.owner = {
+        id: playlist.owner.id
+    };
+    transformed.date = new Date();
+    return transformed;
+}
+
+function appendTracks(playlist, index, total) {
+    return spotify.all(spotify.api.getPlaylistTracks, [playlist.owner.id, playlist.id], 100)
+        .then(function (tracks) {
+            playlist.tracks = tracks.map(function (track) {
+                return track.track;
+            }).filter(function (track) {
+                return track !== null;
+            }).map(function (track) {
+                return track.id;
+            });
+            console.log("extracted tracks", playlist.tracks.length);
+            console.log('extracted ', (index + 1), '/', total);
+            return playlist;
+        });
+}
+
 function insertPlaylists(playlists) {
     return MongoClient.connect(config.db_url)
         .then(function (db) {
@@ -50,34 +78,29 @@ function insertPlaylists(playlists) {
         });
 }
 
-function getItems(response) {
-    return response.body.items;
-}
-
-function stripPlaylist(playlist) {
-    var stripped = {};
-    stripped.id = playlist.id;
-    stripped.name = playlist.name;
-    stripped.snapshot_id = playlist.snapshot_id;
-    stripped.owner = {
-        id: playlist.owner.id
-    };
-    return stripped;
-}
-
-function appendTracks(playlist, index, total) {
-    return spotify.all(spotify.api.getPlaylistTracks, [playlist.owner.id, playlist.id], 100)
-        .then(function (tracks) {
-            playlist.tracks = tracks.map(function (track) {
-                return track.track;
-            }).filter(function (track) {
-                return track !== null;
-            }).map(function (track) {
-                return track.id;
+function aggregateNames() {
+    var aggregateCollName = "playlist-names";
+    console.log('aggregating names');
+    return MongoClient.connect(config.db_url)
+        .then(function (db) {
+            return db.collection(aggregateCollName).remove().then(function () {
+                console.log(aggregateCollName, " removed");
+                return db;
             });
-            console.log("extracted tracks", playlist.tracks.length);
-            console.log('extracted ', (index + 1), '/', total);
-            return playlist;
+        })
+        .then(function (db) {
+            return db.collection('playlists').aggregate([{
+                $group: {
+                    _id: "$id",
+                    names: {
+                        $addToSet: "$name"
+                    }
+                }
+            }, {
+                $out: aggregateCollName
+            }]).toArray().then(function () {
+                console.log("aggregated");
+            });
         });
 }
 
@@ -103,7 +126,7 @@ module.exports.load = function () {
         .then(function (playlists) {
             console.log('extracted playlists: ' + Object.keys(playlists).length);
             return Promise.all(playlists
-                .map(stripPlaylist)
+                .map(transformPlaylist)
                 .map(function (playlist, index, playlists) {
                     return spotify.queue(function () {
                         return appendTracks(playlist, index, playlists.length);
@@ -112,6 +135,8 @@ module.exports.load = function () {
         })
         .then(displayTime)
         .then(insertPlaylists)
+        .then(displayTime)
+        .then(aggregateNames)
         .then(displayTime)
         .then(function () {
             console.log('finished');

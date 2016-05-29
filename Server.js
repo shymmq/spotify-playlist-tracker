@@ -7,15 +7,16 @@ var path = __dirname + '/views/';
 var request = require('request');
 var url = require('url');
 var querystring = require('querystring');
+var MongoClient = require('mongodb').MongoClient;
 var config = require('./config');
 var spotify = require('./spotify');
-var retriever = require('./loader');
+var loader = require('./loader');
 
 var redirect_uri = 'http://localhost:3000/callback';
 
 app.set('view engine', 'jade');
 
-retriever.load();
+//loader.load();
 
 router.get("/", function (req, res) {
     spotify.refreshAccessToken
@@ -36,6 +37,27 @@ router.get("/songs", function (req, res) {
         .then(function (data) {
             res.render('songs', data.body);
             console.log('The playlist contains these tracks', data.body);
+        });
+});
+
+router.get("/search", function (req, res) {
+    var query = req.query.query;
+    console.log("searching for ", query);
+    return MongoClient.connect(config.db_url)
+        .then(function (db) {
+            return db.collection("playlist-names").find({
+                names: {
+                    $regex: query,
+                    $options: 'i'
+                }
+            }).toArray();
+        })
+        .then(function (results) {
+            console.log(results);
+            res.setHeader('Content-Type', 'application/json');
+            res.send(results);
+        }, function (err) {
+            console.log(err);
         });
 });
 
@@ -81,7 +103,6 @@ router.get("/callback", function (req, res) {
         console.log(error);
         console.log(response);
     });
-
 });
 
 app.use("/", router);
