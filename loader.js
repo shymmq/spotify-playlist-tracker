@@ -7,12 +7,11 @@ var ObjectId = require('mongodb').ObjectID;
 var config = require('./config');
 var spotify = require('./spotify');
 
-function insertPlaylists(playlists) {
+function filterNew(playlists) {
+    console.log('filtering');
     return MongoClient.connect(config.db_url)
         .then(function (db) {
-            var collection = db.collection('playlists');
-
-            return collection.find({
+            return db.collection('playlists').find({
                 $or: playlists.map(function (playlist) {
                     return {
                         'id': playlist.id,
@@ -27,17 +26,27 @@ function insertPlaylists(playlists) {
                 var filtered = playlists.filter(function (playlist) {
                     return ids.indexOf(playlist.id) === -1;
                 });
-                if (filtered.length > 0) {
-                    return collection.insertMany(filtered).then(function (result) {
-                        var loaded = result.insertedCount;
-                        console.log("loaded: " + loaded);
-                        return loaded;
-                    });
-                } else {
-                    console.log("nothing to load");
-                    return 0;
-                }
+                console.log('filtered', filtered.length);
+                return filtered;
             });
+        });
+}
+
+function insertPlaylists(playlists) {
+    return MongoClient.connect(config.db_url)
+        .then(function (db) {
+            if (playlists.length > 0) {
+                console.log('inserting', playlists.length);
+                return db.collection('playlists').insertMany(playlists).then(function (result) {
+                    var loaded = result.insertedCount;
+                    console.log("inserted: " + loaded);
+                    return loaded;
+                });
+            } else {
+                console.log("nothing to load");
+                return 0;
+            }
+
         });
 }
 
@@ -56,9 +65,8 @@ function stripPlaylist(playlist) {
     return stripped;
 }
 
-function appendTracks(playlist) {
-    return spotify.api.getPlaylistTracks(playlist.owner.id, playlist.id)
-        .then(getItems)
+function appendTracks(playlist, index, total) {
+    return spotify.all(spotify.api.getPlaylistTracks, [playlist.owner.id, playlist.id], 100)
         .then(function (tracks) {
             playlist.tracks = tracks.map(function (track) {
                 return track.track;
@@ -67,67 +75,47 @@ function appendTracks(playlist) {
             }).map(function (track) {
                 return track.id;
             });
+            console.log("extracted tracks", playlist.tracks.length);
+            console.log('extracted ', (index + 1), '/', total);
             return playlist;
         });
 }
 
-function loadPart(offset) {
-    console.log('starting offset: ' + offset);
-    return spotify.refreshAccessToken
-        .then(function (spotifyApi) {
-            return spotify.api.getUserPlaylists(config.user_id, {
-                limit: 50,
-                offset: offset
-            });
-        }).then(getItems)
+var start;
+
+function displayTime(arg) {
+    var diff = new Date() - start;
+    console.log(Math.floor(diff / 1000) + 's');
+    return arg;
+}
+module.exports = {};
+
+module.exports.load = function () {
+    start = new Date();
+    spotify.refreshAccessToken
+        .then(function () {
+            console.log('token refreshed');
+            return spotify.all(spotify.api.getUserPlaylists, [config.user_id]);
+        })
+        .then(displayTime)
+        .then(filterNew)
+        .then(displayTime)
         .then(function (playlists) {
             console.log('extracted playlists: ' + Object.keys(playlists).length);
             return Promise.all(playlists
                 .map(stripPlaylist)
-                .map(appendTracks));
-        }).then(insertPlaylists)
-        .then(function (loaded) {
-            console.log('finished offset: ' + offset);
-            return loaded;
-        });
-}
-
-function delay(time) {
-    return new Promise(function (fulfill) {
-        setTimeout(fulfill, time);
-    });
-}
-
-module.exports = {};
-
-module.exports.load = function () {
-    spotify.refreshAccessToken
-        .then(function (spotifyApi) {
-            return spotify.api.getUserPlaylists(config.user_id, {
-                limit: 1
-            });
-        }).then(function (response) {
-            var total = response.body.total,
-                promises = [],
-                offsets = [],
-                offset,
-                delaySeconds;
-            console.log(total);
-            for (offset = 0, delaySeconds = 0; offset < total; offset += 50, delaySeconds += 10) {
-                offsets.push({
-                    offset: offset,
-                    delaySeconds: delaySeconds
-                });
-            }
-            return Promise.all(offsets.map(function (offsetDelay) {
-                return delay(offsetDelay.delaySeconds * 1000).then(function () {
-                    return loadPart(offsetDelay.offset);
-                });
-            }));
-        }).then(function (totals) {
-            console.log('loading finished');
-            console.log('total loaded:' + totals.reduce(function (pv, cv) {
-                return pv + cv;
-            }, 0));
+                .map(function (playlist, index, playlists) {
+                    return spotify.queue(function () {
+                        return appendTracks(playlist, index, playlists.length);
+                    });
+                }));
+        })
+        .then(displayTime)
+        .then(insertPlaylists)
+        .then(displayTime)
+        .then(function () {
+            console.log('finished');
+        }, function (err) {
+            console.log(err);
         });
 };
