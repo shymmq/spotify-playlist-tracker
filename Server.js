@@ -5,6 +5,7 @@ var app = express();
 var router = express.Router();
 var path = __dirname + '/views/';
 var request = require('request');
+var Promise = require('promise');
 var url = require('url');
 var querystring = require('querystring');
 var iconv = require('iconv-lite');
@@ -22,44 +23,65 @@ app.set('view engine', 'jade');
 
 function refreshAccessToken(callback) {
     spotifyApi.refreshAccessToken()
-        .then(function (data) {
+        .then(function(data) {
             spotifyApi.setAccessToken(data.body.access_token);
             callback();
-        }, function (err) {
+        }, function(err) {
             console.log('Could not refresh access token', err);
         });
 }
 
-router.get("/", function (req, res) {
-    refreshAccessToken(function () {
+router.get("/", function(req, res) {
+    // res.sendFile(path + "404.html");
+    console.log("Starting retrieving playlists");
+    refreshAccessToken(function() {
         spotifyApi.getUserPlaylists(config.user_id)
-            .then(function (data) {
-                console.log('Retrieved playlists', data.body);
-                res.render('playlists', data.body);
-            }, function (err) {
-                console.log('Something went wrong!', err);
-            });
+            .then(function(data) {
+
+                    var promises = [];
+                    var combined_data = {items:[]};
+                    console.log('Retrieved playlists', data.body.items);
+                    for (var playlist in data.body.items) {
+                        promises.push(spotifyApi.getUser(data.body.items[playlist].owner.id))
+                    }
+                    console.log("Waiting for download: "+ promises)
+                    Promise.all(promises).then(function(results) {
+                        for (var i in results){
+                            combined_data.items.push({'playlist': data.body.items[i] ,'playlist_owner': results[i].body})
+                        }
+                        // console.log("Data: " + JSON.stringify(combined_data))
+                        res.render('playlists',combined_data)
+
+                    }, function(err) {
+                        console.log("error",err);
+                    })
+                },
+                function(err) {
+                    console.log('Something went wrong!', err);
+                }
+            );
+
+        
     });
 });
-
-router.get("/songs", function (req, res) {
-    refreshAccessToken(function () {
+router.get("/songs", function(req, res) {
+    refreshAccessToken(function() {
         spotifyApi.getPlaylistTracks(req.query.userid, req.query.id)
-            .then(function (data) {
+            .then(function(data) {
                 res.render('songs', data.body);
                 console.log('The playlist contains these tracks', data.body);
-            }, function (err) {
+            }, function(err) {
                 console.log('Something went wrong!', err);
             });
     });
 });
 
-router.use(function (req, res, next) {
+router.use(function(req, res, next) {
     console.log("/" + req.method);
     next();
 });
 
-router.get("/spotify", function (req, res) {
+router.get("/spotify", function(req, res) {
 
     var scopes = 'user-read-private user-read-email playlist-read-private playlist-modify-public playlist-modify-private playlist-read-collaborative';
     res.redirect('https://accounts.spotify.com/authorize?' +
@@ -71,11 +93,11 @@ router.get("/spotify", function (req, res) {
         }));
 });
 
-router.get("/style.css", function (req, res) {
+router.get("/style.css", function(req, res) {
     res.sendFile(path + "style.css");
 });
 
-router.get("/callback", function (req, res) {
+router.get("/callback", function(req, res) {
     res.sendFile(path + "contact.html");
     console.log(req.query);
     var authOptions = {
@@ -91,7 +113,7 @@ router.get("/callback", function (req, res) {
         json: true
     };
 
-    request.post(authOptions, function (error, response, body) {
+    request.post(authOptions, function(error, response, body) {
         console.log(body);
         console.log(error);
         console.log(response);
@@ -101,10 +123,10 @@ router.get("/callback", function (req, res) {
 
 app.use("/", router);
 
-app.use("*", function (req, res) {
+app.use("*", function(req, res) {
     res.sendFile(path + "404.html");
 });
 
-app.listen(3000, function () {
+app.listen(3000, function() {
     console.log("Live at Port 3000");
 });
