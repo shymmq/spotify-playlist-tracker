@@ -1,0 +1,4 @@
+//TODO
+-naprawić css
+-ładować piosenki tak samo jak playlisty
+-

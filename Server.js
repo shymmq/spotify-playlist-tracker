@@ -24,7 +24,11 @@ function appendUsername(playlist){
         return playlist;
     });
 }
-router.get("/", function(req, res) {
+router.get("/",function(req,res){
+    // res.render("search");
+    res.sendFile( __dirname + '/public/index.html');
+});
+router.get("/playlists", function(req, res) {
     // res.sendFile(path + "404.html");
     console.log("Starting retrieving playlists");
     spotify.refreshAccessToken.then(function(){
@@ -32,25 +36,9 @@ router.get("/", function(req, res) {
     }).then(function(response){
         return Promise.all(response.body.items.map(appendUsername));
     }).then(function(playlists){
-        res.render('playlists',{items: playlists});
+        // res.render('playlists',{items: playlists});
+        res.json({items: playlists});
     });
-                    // var promises = [];
-                    // var combined_data = {items:[]};
-                    // console.log('Retrieved playlists', data.body.items);
-                    // for (var playlist in data.body.items) {
-                    //     promises.push(spotifyApi.getUser(data.body.items[playlist].owner.id))
-                    // }
-                    // console.log("Waiting for download: "+ promises)
-                    // Promise.all(promises).then(function(results) {
-                    //     for (var i in results){
-                    //         combined_data.items.push({'playlist': data.body.items[i] ,'playlist_owner': results[i].body})
-                    //     }
-                    //     // console.log("Data: " + JSON.stringify(combined_data))
-                    //     res.render('playlists',combined_data)
-
-                    // }, function(err) {
-                    //     console.log("error",err);
-                    // })
 });
 router.get("/songs", function (req, res) {
     spotify.refreshAccessToken
@@ -58,11 +46,24 @@ router.get("/songs", function (req, res) {
             return spotify.api.getPlaylistTracks(req.query.userid, req.query.id);
         })
         .then(function (data) {
-            res.render('songs', data.body);
-            console.log('The playlist contains these tracks', data.body);
+            for (var i = 0; i < data.body.items.length; i++) {
+                data.body.items[i].track.artists_string=""
+                for (var j = 0; j < data.body.items[i].track.artists.length; j++) {
+                    data.body.items[i].track.artists_string+=data.body.items[i].track.artists[j].name
+
+                    if(j<data.body.items[i].track.artists.length-1){
+
+                        data.body.items[i].track.artists_string+=', '
+
+                    }   
+                }
+                console.log(data.body.items[i].track.artists_string);
+            } 
+            // res.render('songs', data.body);
+            // console.log('The playlist contains these tracks', data.body);
+            res.json(({items:data.body}))
         });
 });
-
 router.get("/search", function (req, res) {
     var query = req.query.query;
     console.log("searching for ", query);
@@ -83,6 +84,8 @@ router.get("/search", function (req, res) {
             console.log(err);
         });
 });
+
+app.use(express.static(__dirname + '/public')); //serve static assets
 
 router.use(function(req, res, next) {
     console.log("/" + req.method);

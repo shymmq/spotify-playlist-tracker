@@ -1,0 +1,13 @@
+<p>{{id}}</p>
+<table>
+	<tr ng-repeat="song in data.items">
+		<td id="index-cell"><p id="index">{{$index}}</p></td>
+		<td id="track-name-cell"><p id="track-name">{{song.track.name}}</p></td>
+		<td id="track-artists-cell"><p id="track-artists">{{song.track.artists_string}}</p></td>
+	</tr>
+</table>
+<div ng-repeat="song in data.items">
+	<!-- <script>console.log(song.track.name)</script> -->
+	<p id="track-name">{{song.track.name}}</p>
+	<p id="track-artists">{{song.track.artists_string}}</p>
+</div>

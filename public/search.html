@@ -1,0 +1,11 @@
+<form ng-Submit="search()">
+	<input ng-model="search_query"></input>
+	<input class="button" type="submit" value="Search" />
+</form>
+<table>
+	<tr ng-repeat="result in results">
+		<td>
+			<p ng-repeat="name in result.names">{{name}}</p>
+		</td>
+	</tr>
+</table>
