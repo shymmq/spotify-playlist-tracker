@@ -1,0 +1,7 @@
+<table>
+	<tr ng-repeat="snapshot in data">
+		<td id="index-cell"><p id="index">{{$index}}</p></td>
+		<td id="snapshot-name-cell"><p id="snapshot-name">{{snapshot.name}}</p></td>
+		<td id="snapshot-date-cell"><p id="snapshot-date">{{snapshot.date | date:shortDate}}</p></td>
+	</tr>
+</table>

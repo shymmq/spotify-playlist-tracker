@@ -5,7 +5,7 @@ var config = require('./config');
 var SpotifyWebApi = require('spotify-web-api-node');
 var Queue = require('promise-queue');
 var queue = new Queue(1, Infinity);
-
+Queue.configure(Promise);
 var spotifyApi = new SpotifyWebApi({
     clientId: config.client_id,
     clientSecret: config.client_secret

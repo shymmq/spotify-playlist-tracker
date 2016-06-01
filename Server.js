@@ -18,26 +18,29 @@ var redirect_uri = 'http://localhost:3000/callback';
 app.set('view engine', 'jade');
 
 //loader.load();
-function appendUsername(playlist){
-    return spotify.api.getUser(playlist.owner.id).then(function(response){
+
+function appendUsername(playlist) {
+    return spotify.api.getUser(playlist.owner.id).then(function (response) {
         playlist.owner.display_name = response.body.display_name;
         return playlist;
     });
 }
-router.get("/",function(req,res){
+router.get("/", function (req, res) {
     // res.render("search");
-    res.sendFile( __dirname + '/public/index.html');
+    res.sendFile(__dirname + '/public/index.html');
 });
-router.get("/playlists", function(req, res) {
+router.get("/playlists", function (req, res) {
     // res.sendFile(path + "404.html");
     console.log("Starting retrieving playlists");
-    spotify.refreshAccessToken.then(function(){
+    spotify.refreshAccessToken.then(function () {
         return spotify.api.getUserPlaylists(config.user_id);
-    }).then(function(response){
+    }).then(function (response) {
         return Promise.all(response.body.items.map(appendUsername));
-    }).then(function(playlists){
+    }).then(function (playlists) {
         // res.render('playlists',{items: playlists});
-        res.json({items: playlists});
+        res.json({
+            items: playlists
+        });
     });
 });
 router.get("/songs", function (req, res) {
@@ -47,21 +50,23 @@ router.get("/songs", function (req, res) {
         })
         .then(function (data) {
             for (var i = 0; i < data.body.items.length; i++) {
-                data.body.items[i].track.artists_string=""
+                data.body.items[i].track.artists_string = ""
                 for (var j = 0; j < data.body.items[i].track.artists.length; j++) {
-                    data.body.items[i].track.artists_string+=data.body.items[i].track.artists[j].name
+                    data.body.items[i].track.artists_string += data.body.items[i].track.artists[j].name
 
-                    if(j<data.body.items[i].track.artists.length-1){
+                    if (j < data.body.items[i].track.artists.length - 1) {
 
-                        data.body.items[i].track.artists_string+=', '
+                        data.body.items[i].track.artists_string += ', '
 
-                    }   
+                    }
                 }
                 console.log(data.body.items[i].track.artists_string);
-            } 
+            }
             // res.render('songs', data.body);
             // console.log('The playlist contains these tracks', data.body);
-            res.json(({items:data.body}))
+            res.json(({
+                items: data.body
+            }))
         });
 });
 router.get("/search", function (req, res) {
@@ -74,25 +79,39 @@ router.get("/search", function (req, res) {
                     $regex: query,
                     $options: 'i'
                 }
-            }).toArray();
+            }).limit(20).toArray();
         })
         .then(function (results) {
             console.log(results);
-            res.setHeader('Content-Type', 'application/json');
-            res.send(results);
+            res.json(results);
         }, function (err) {
             console.log(err);
         });
 });
-
+router.get("/history", function (req, res) {
+    var id = req.query.id;
+    console.log("searching hisodastry  for ", id);
+    return MongoClient.connect(config.db_url)
+        .then(function (db) {
+            return db.collection("playlists").find({
+                id: id
+            }).limit(20).toArray();
+        })
+        .then(function (results) {
+            console.log(results);
+            res.json(results);
+        }, function (err) {
+            console.log(err);
+        });
+});
 app.use(express.static(__dirname + '/public')); //serve static assets
-
-router.use(function(req, res, next) {
+app.use(express.static(__dirname + '/node_modules'));
+router.use(function (req, res, next) {
     console.log("/" + req.method);
     next();
 });
 
-router.get("/spotify", function(req, res) {
+router.get("/spotify", function (req, res) {
 
     var scopes = 'user-read-private user-read-email playlist-read-private playlist-modify-public playlist-modify-private playlist-read-collaborative';
     res.redirect('https://accounts.spotify.com/authorize?' +
@@ -104,11 +123,11 @@ router.get("/spotify", function(req, res) {
         }));
 });
 
-router.get("/style.css", function(req, res) {
+router.get("/style.css", function (req, res) {
     res.sendFile(path + "style.css");
 });
 
-router.get("/callback", function(req, res) {
+router.get("/callback", function (req, res) {
     res.sendFile(path + "contact.html");
     console.log(req.query);
     var authOptions = {
@@ -124,7 +143,7 @@ router.get("/callback", function(req, res) {
         json: true
     };
 
-    request.post(authOptions, function(error, response, body) {
+    request.post(authOptions, function (error, response, body) {
         console.log(body);
         console.log(error);
         console.log(response);
@@ -133,10 +152,10 @@ router.get("/callback", function(req, res) {
 
 app.use("/", router);
 
-app.use("*", function(req, res) {
+app.use("*", function (req, res) {
     res.sendFile(path + "404.html");
 });
 
-app.listen(3000, function() {
+app.listen(3000, function () {
     console.log("Live at Port 3000");
 });

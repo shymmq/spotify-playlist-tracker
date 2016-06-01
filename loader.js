@@ -92,6 +92,7 @@ function aggregateNames() {
             return db.collection('playlists').aggregate([{
                 $group: {
                     _id: "$id",
+                    id: {$first:"$id"},
                     names: {
                         $addToSet: "$name"
                     }

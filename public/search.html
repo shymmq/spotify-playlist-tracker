@@ -1,11 +1,22 @@
 <form ng-Submit="search()">
+    <!--
 	<input ng-model="search_query"></input>
 	<input class="button" type="submit" value="Search" />
+-->
+    <md-autocomplete md-selected-item="search_query" md-search-text="searchText" md-items="item in search(searchText)" md-item-text="item.names" md-min-length="2" placeholder="Search playlists...">
+        <md-item-template>
+            <span md-highlight-text="searchText" md-highlight-flags="^i">{{item.names[0]}}</span>
+        </md-item-template>
+        <md-not-found>
+            No states matching "{{searchText}}" were found.
+        </md-not-found>
+    </md-autocomplete>
 </form>
 <table>
-	<tr ng-repeat="result in results">
-		<td>
-			<p ng-repeat="name in result.names">{{name}}</p>
-		</td>
-	</tr>
+    <tr ng-repeat="result in results">
+        <td>
+            <a ng-repeat="name in result.names">{{name}}</a>
+            <a href="#history/{{result.id}}">History</a>
+        </td>
+    </tr>
 </table>
