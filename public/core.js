@@ -1,3 +1,5 @@
+/*global angular*/
+'use strict';
 var app = angular.module('spotify-playlist-tracker', ['ngRoute', 'ngMaterial', 'ngMessages', 'ngAnimate']);
 app.config(function ($routeProvider) {
     $routeProvider
@@ -51,6 +53,18 @@ app.controller('songsController', function ($scope, $http, $routeParams) {
 
 });
 app.controller('searchController', function ($scope, $http) {
+    $scope.showHistory = function (playlistNames) {
+        var data = {
+            id: playlistNames.id
+        }
+        $http.get('/history', {
+                params: data
+            })
+            .then(function (res) {
+                $scope.history = res.data;
+
+            });
+    }
     $scope.search = function (query) {
         //        console.log($scope.search_query);
 
@@ -65,18 +79,10 @@ app.controller('searchController', function ($scope, $http) {
             });
     }
 
-});
-app.controller('historyController', function ($scope, $http, $routeParams) {
-    var id = $routeParams.id;
-    console.log("Starting historyController");
-    var data = {
-        id: id
-    }
-    $http.get('/history', {
-            params: data
-        })
-        .then(function (res) {
-            $scope.data = res.data;
 
-        });
 });
+//app.controller('historyController', function ($scope, $http, $routeParams) {
+//    var id = $routeParams.id;
+//    console.log("Starting historyController");
+//
+//});
