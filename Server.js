@@ -43,31 +43,17 @@ router.get("/playlists", function (req, res) {
         });
     });
 });
-router.get("/songs", function (req, res) {
+router.get("/tracks", function (req, res) {
     spotify.refreshAccessToken
         .then(function () {
-            return spotify.api.getPlaylistTracks(req.query.userid, req.query.id);
+            return spotify.api.getTracks(req.query.tracks);
         })
-        .then(function (data) {
-            for (var i = 0; i < data.body.items.length; i++) {
-                data.body.items[i].track.artists_string = ""
-                for (var j = 0; j < data.body.items[i].track.artists.length; j++) {
-                    data.body.items[i].track.artists_string += data.body.items[i].track.artists[j].name
-
-                    if (j < data.body.items[i].track.artists.length - 1) {
-
-                        data.body.items[i].track.artists_string += ', '
-
-                    }
-                }
-                console.log(data.body.items[i].track.artists_string);
-            }
-            // res.render('songs', data.body);
-            // console.log('The playlist contains these tracks', data.body);
-            res.json(({
-                items: data.body
-            }))
-        });
+        .then(function (response) {
+                res.json(response.body.tracks);
+            },
+            function (err) {
+                console.log(err);
+            });
 });
 router.get("/search", function (req, res) {
     var query = req.query.query;

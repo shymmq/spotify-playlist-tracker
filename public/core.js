@@ -3,71 +3,13 @@
 var app = angular.module('spotify-playlist-tracker', ['ngRoute', 'ngMaterial', 'ngMessages', 'ngAnimate']);
 app.config(function ($routeProvider) {
     $routeProvider
-        .when('/search', {
+        .when('/', {
             templateUrl: 'search.html',
             controller: 'searchController'
         })
-        .when('/', {
-            templateUrl: 'playlists.html',
-            controller: 'playlistsController'
-        })
-
-    .when('/songs/:id', {
-        templateUrl: 'songs.html',
-        controller: 'songsController'
-    })
-
-    .when('/history/:id', {
-            templateUrl: 'history.html',
-            controller: 'historyController'
-        })
-        //the signup displa
-        // .when('/register', {
-        // 	templateUrl: 'register.html',
-        // 	controller: 'authController'
-});
-app.controller('playlistsController', function ($scope, $http) {
-    // $scope.items=[{name:"ABC",id:"4321"},{name: "def",id:"66678"}];
-    $http.get('/playlists')
-        .then(function (res) {
-            $scope.items = res.data.items;
-        });
-});
-app.controller('songsController', function ($scope, $http, $routeParams) {
-    $scope.id = $routeParams.id;
-    console.log("Starting songsController");
-    var data = {
-        userid: 'spotify',
-        id: $routeParams.id
-    }
-    $http.get('/songs', {
-            params: data
-        })
-        .then(function (res) {
-            var items = res.data.items;
-
-
-            $scope.data = items;
-
-        });
-
 });
 app.controller('searchController', function ($scope, $http) {
-    $scope.showHistory = function (playlistNames) {
-        var data = {
-            id: playlistNames.id
-        }
-        $http.get('/history', {
-                params: data
-            })
-            .then(function (res) {
-                $scope.history = res.data;
-
-            });
-    }
     $scope.search = function (query) {
-        //        console.log($scope.search_query);
-
         return $http.get('/search', {
                 params: {
                     query: query
@@ -78,11 +20,50 @@ app.controller('searchController', function ($scope, $http) {
                 return res.data;
             });
     }
+    $scope.showHistory = function (playlistNames) {
+        $scope.history = [];
+        if (!playlistNames) {
+            return;
+        }
+        var data = {
+            id: playlistNames.id
+        }
+        $scope.snapshotLoading = true;
+
+        $http.get('/history', {
+                params: data
+            })
+            .then(function (res) {
+                $scope.history = res.data;
+                $scope.snapshotLoading = false;
+            });
+    }
+    $scope.showTracks = function (snapshot) {
+        console.log(snapshot);
+        $scope.tracksLoading = true;
+        $scope.tracks = [];
+        var offset = 0;
+
+        function loadChunk() {
+            $http.get('/tracks', {
+                    params: {
+                        tracks: snapshot.tracks.slice(offset, offset + 50)
+                    }
+                })
+                .then(function (res) {
+                    console.log(res.data);
+                    $scope.tracksLoading = false;
+                    $scope.tracks = $scope.tracks.concat(res.data);
+                    if ($scope.tracks.length < snapshot.tracks.length) {
+                        offset += 50;
+                        return loadChunk();
+                    }
+
+
+                });
+        }
+        loadChunk();
+    }
 
 
 });
-//app.controller('historyController', function ($scope, $http, $routeParams) {
-//    var id = $routeParams.id;
-//    console.log("Starting historyController");
-//
-//});

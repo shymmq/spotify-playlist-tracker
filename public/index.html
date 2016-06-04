@@ -21,24 +21,66 @@
 
 </head>
 
-<body ng-app="spotify-playlist-tracker">
-
-    <md-toolbar md-scroll-shrink="">
+<body ng-app="spotify-playlist-tracker" layout="row" ng-controller="searchController" layout-fill>
+    <!--
+    <md-toolbar>
         <div class="md-toolbar-tools">
             <h3>
-        <span>Playlists</span>
-      </h3>
+                <span>Playlists</span>
+            </h3>
         </div>
     </md-toolbar>
+-->
+    <md-sidenav flex md-is-locked-open="true" class="md-sidenav-left md-whiteframe-5dp" md-component-id="left" md-disable-backdrop="" md-whiteframe="4">
+        <md-toolbar class="app-toolbar">
+            <p class="app-name">Playlist Tracker</p>
+        </md-toolbar>
+        <md-content flex>
+            <md-autocomplete md-delay="500" md-selected-item="search_query" md-search-text="searchText" md-items="item in search(searchText)" md-item-text="item.names" md-min-length="2" placeholder="Search playlists..." md-selected-item-change="showHistory(item)">
+                <md-item-template>
+                    <span md-highlight-text="searchText" md-highlight-flags="^i">{{item.names[0]}}</span>
+                </md-item-template>
+                <md-not-found>
+                    No states matching "{{searchText}}" were found.
+                </md-not-found>
+            </md-autocomplete>
+            <md-progress-circular md-mode="indeterminate" ng-show="snapshotLoading" class="center-spinner" md-diameter="100px"></md-progress-circular>
+            <md-list>
 
-    <div id='main' class="container">
-        <div class="col-md-offset-2 col-md-8">
-            <md-content flex="">
-                <div ng-view>
+                <md-list-item class="md-2-line" ng-repeat="snapshot in history">
+
+                    <div class="md-list-item-text">
+                        <h3><a href="" ng-click="showTracks(snapshot)">{{snapshot.date | date:shortDate}}</a></h3>
+                        <h4>{{snapshot.name}}</h4>
+                    </div>
+                    <md-divider inset=""></md-divider>
+                </md-list-item>
+
+            </md-list>
+        </md-content>
+    </md-sidenav>
+    <md-content flex>
+        <md-progress-circular md-mode="indeterminate" ng-show="tracksLoading" class="center-spinner" md-diameter="100px"></md-progress-circular>
+        <md-list>
+
+            <md-list-item class="md-2-line" ng-repeat="track in tracks">
+
+                <div class="md-list-item-text">
+                    <h3>{{track.name}}</h3>
+                    <h4>{{snapshot.name}}</h4>
                 </div>
-            </md-content>
+                <md-divider inset=""></md-divider>
+            </md-list-item>
+
+        </md-list>
+    </md-content>
+    <!--
+    <md-content>
+        <div ng-view>
         </div>
-    </div>
+    </md-content>
+-->
+
 </body>
 
 </html>
