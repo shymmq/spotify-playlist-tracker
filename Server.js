@@ -15,6 +15,9 @@ router.get("/", function (req, res) {
     // res.render("search");
     res.sendFile(__dirname + '/public/index.html');
 });
+router.get("/load", function (res, req) {
+    loader.load();
+})
 router.get("/tracks", function (req, res) {
     spotify.refreshAccessToken
         .then(function () {
@@ -53,7 +56,9 @@ router.get("/history", function (req, res) {
         .then(function (db) {
             return db.collection("playlists").find({
                 id: id
-            }).limit(20).toArray();
+            }).limit(20).sort({
+                date: -1
+            }).toArray();
         })
         .then(function (results) {
             console.log(results);
