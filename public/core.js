@@ -1,13 +1,7 @@
 /*global angular*/
 'use strict';
 var app = angular.module('spotify-playlist-tracker', ['ui.bootstrap']);
-//app.config(function ($routeProvider) {
-//    $routeProvider
-//        .when('/', {
-//            templateUrl: 'search.html',
-//            controller: 'searchController'
-//        })
-//});
+
 app.controller('searchController', function($scope, $http, $location, $anchorScroll) {
     $scope.search = function(query) {
         return $http.get('/search', {
@@ -60,9 +54,9 @@ app.controller('searchController', function($scope, $http, $location, $anchorScr
                 }
             })
             .then(function(res) {
-                console.log(document.getElementById("songs").scrollTop);
                 $scope.tracksLoading = false;
                 $scope.tracks = res.data;
+                console.log(res.data);
             });
     };
     $scope.showTracks = function(snapshot) {

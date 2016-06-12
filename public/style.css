@@ -30,6 +30,9 @@
     bottom: 0px;
     overflow-y: auto;
 }
+.playLink {
+  vertical-align: middle;
+}
 @font-face {
     font-family: "Light";
     font-style: normal;

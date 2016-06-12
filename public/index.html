@@ -42,15 +42,17 @@
             </a>
         </div>
     </div>
-    <div id="songs" class="col-xs-8 col-xs-offset-4" ng-hide="tracks==null || tracks.length==0">
-      <a id="top"></a>
-        <table class="table table-striped content-table" >
+    <div id="songs" class="col-xs-8 col-xs-offset-4 " ng-hide="tracks==null || tracks.length==0 ">
+      <a id="top "></a>
+        <table class="table table-striped content-table " >
             <thead>
                 <th>Name
                 </th>
                 <th>Artist
                 </th>
                 <th>Album
+                </th>
+                <th>
                 </th>
             </thead>
             <tbody class="table-content-container ">
@@ -60,13 +62,20 @@
                         <p ng-repeat="artist in track.artists ">{{artist.name}}</p>
                     </td>
                     <td>{{track.album.name}}</td>
+                    <td class="playLink">
+                        <a href="{{track.external_urls.spotify}} " target="_blank ">
+                          <span class="glyphicon glyphicon-play ">
+                          </span>
+                        </a>
+                    </td>
+
                 </tr>
             </tbody>
         </table>
         <nav>
-          <ul class="pager">
-            <li><a href="" ng-show="hasPrev()" ng-click="prevPage()">Previous</a></li>
-            <li><a href="" ng-show="hasNext()" ng-click="nextPage()">Next</a></li>
+          <ul class="pager ">
+            <li><a href=" " ng-show="hasPrev() " ng-click="prevPage() ">Previous</a></li>
+            <li><a href=" " ng-show="hasNext() " ng-click="nextPage() ">Next</a></li>
           </ul>
         </nav>
 
