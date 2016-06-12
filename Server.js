@@ -11,6 +11,7 @@ var loader = require('./loader');
 
 //loader.load();
 app.use(express.static(__dirname + '/public')); //serve static assets
+app.use(express.static(__dirname + '/node_modules')); //serve static assets
 router.get("/", function (req, res) {
     // res.render("search");
     res.sendFile(__dirname + '/public/index.html');

@@ -1,13 +1,13 @@
 /*global angular*/
 'use strict';
-var app = angular.module('spotify-playlist-tracker', ['ngRoute', 'ngMaterial', 'ngMessages', 'ngAnimate']);
-app.config(function ($routeProvider) {
-    $routeProvider
-        .when('/', {
-            templateUrl: 'search.html',
-            controller: 'searchController'
-        })
-});
+var app = angular.module('spotify-playlist-tracker', ['ui.bootstrap']);
+//app.config(function ($routeProvider) {
+//    $routeProvider
+//        .when('/', {
+//            templateUrl: 'search.html',
+//            controller: 'searchController'
+//        })
+//});
 app.controller('searchController', function ($scope, $http) {
     $scope.search = function (query) {
         return $http.get('/search', {
@@ -20,6 +20,13 @@ app.controller('searchController', function ($scope, $http) {
                 return res.data;
             });
     }
+    $scope.getTimes = function (n) {
+        var res = [];
+        for (var i = 0; i < n; i++) {
+            res.push(i);
+        }
+        return res
+    };
     $scope.showHistory = function (playlistNames) {
         $scope.history = [];
         if (!playlistNames) {
