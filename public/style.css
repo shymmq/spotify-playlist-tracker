@@ -6,7 +6,7 @@
     position: absolute;
     top: 50%;
     left: 50%;
-    margin: -60px 0px 0px -60px;
+    margin: -30px 0px 0px -45px;
 }
 .snapshots {
     position: fixed;
@@ -38,6 +38,15 @@
 }
 .artist-link:last-child:after {
     content: "";
+}
+.search-icon {
+    position: absolute;
+    top: 31px;
+    right: 30px;
+}
+.search-icon.fa-times {
+  cursor: pointer;
+  cursor: hand;
 }
 @font-face {
     font-family: "Light";

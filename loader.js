@@ -116,7 +116,7 @@ module.exports = {};
 
 module.exports.load = function () {
     start = new Date();
-    spotify.refreshAccessToken
+    spotify.refreshAccessToken()
         .then(function () {
             console.log('token refreshed');
             return spotify.all(spotify.api.getUserPlaylists, [config.user_id]);

@@ -14,13 +14,9 @@ app.controller('searchController', function($scope, $http, $location, $anchorScr
                 return res.data;
             });
     }
-    $scope.getTimes = function(n) {
-        var res = [];
-        for (var i = 0; i < n; i++) {
-            res.push(i);
-        }
-        return res
-    };
+    $scope.clearSearch = function() {
+      $scope.playlistNames = null;
+    }
     $scope.showHistory = function(playlistNames) {
         console.log("showHistory");
         console.log(playlistNames);
@@ -42,6 +38,7 @@ app.controller('searchController', function($scope, $http, $location, $anchorScr
                 $scope.history = res.data;
                 $scope.snapshotLoading = false;
                 console.log($scope.history);
+                $scope.showTracks($scope.history[0]);
             });
     }
     $scope.loadChunk = function() {

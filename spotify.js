@@ -15,29 +15,31 @@ spotifyApi.setRefreshToken(config.refresh_token);
 
 module.exports = {};
 
-module.exports.refreshAccessToken = new Promise(function (resolve, reject) {
-    spotifyApi.refreshAccessToken()
-        .then(function (data) {
-            spotifyApi.setAccessToken(data.body.access_token);
-            resolve();
-        }, function (err) {
-            console.log('Could not refresh access token', err);
-            reject();
-        });
-});
+module.exports.refreshAccessToken = function() {
+    return new Promise(function(resolve, reject) {
+        spotifyApi.refreshAccessToken()
+            .then(function(data) {
+                spotifyApi.setAccessToken(data.body.access_token);
+                resolve();
+            }, function(err) {
+                console.log('Could not refresh access token', err);
+                reject();
+            });
+    });
+}
 
-module.exports.queue = function (promiseGenerator) {
-    return queue.add(function () {
-        return promiseGenerator().then(function (result) {
+module.exports.queue = function(promiseGenerator) {
+    return queue.add(function() {
+        return promiseGenerator().then(function(result) {
             return result;
-        }, function (error) {
+        }, function(error) {
             console.log('error', error);
         });
     });
 };
 
 function loadPart(fn, args, page, loaded) {
-    return fn.apply(spotifyApi, args).then(function (response) {
+    return fn.apply(spotifyApi, args).then(function(response) {
         loaded = loaded.concat(response.body.items);
         if (response.body.next !== null) {
             page.offset += page.limit;
@@ -49,14 +51,14 @@ function loadPart(fn, args, page, loaded) {
     });
 }
 
-module.exports.all = function (fn, args, limit) {
+module.exports.all = function(fn, args, limit) {
     var page = {
         offset: 0,
         limit: limit || 50
     };
     args.push(page);
     return loadPart(fn, args, page, [])
-        .then(function (loaded) {
+        .then(function(loaded) {
             return loaded;
         });
 };
