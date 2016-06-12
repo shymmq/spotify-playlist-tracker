@@ -30,7 +30,7 @@
     bottom: 0px;
     overflow-y: auto;
 }
-.playLink {
+.table > tbody > tr > td.playLink {
   vertical-align: middle;
 }
 @font-face {
