@@ -20,9 +20,15 @@ router.get("/load", function (res, req) {
     loader.load();
 })
 router.get("/tracks", function (req, res) {
+  var trackIds = req.query.tracks;
+  if(!(trackIds instanceof Array)) {
+    console.log("arrayify");
+    trackIds = [trackIds];
+  }
+  console.log(trackIds);
     spotify.refreshAccessToken
         .then(function () {
-            return spotify.api.getTracks(req.query.tracks);
+            return spotify.api.getTracks(trackIds);
         })
         .then(function (response) {
                 res.json(response.body.tracks);

@@ -8,29 +8,31 @@ var app = angular.module('spotify-playlist-tracker', ['ui.bootstrap']);
 //            controller: 'searchController'
 //        })
 //});
-app.controller('searchController', function ($scope, $http) {
-    $scope.search = function (query) {
+app.controller('searchController', function($scope, $http, $location, $anchorScroll) {
+    $scope.search = function(query) {
         return $http.get('/search', {
                 params: {
                     query: query
                 }
             })
-            .then(function (res) {
+            .then(function(res) {
                 console.log(res.data);
                 return res.data;
             });
     }
-    $scope.getTimes = function (n) {
+    $scope.getTimes = function(n) {
         var res = [];
         for (var i = 0; i < n; i++) {
             res.push(i);
         }
         return res
     };
-    $scope.showHistory = function (playlistNames) {
-      console.log("showHistory");
-      console.log(playlistNames);
+    $scope.showHistory = function(playlistNames) {
+        console.log("showHistory");
+        console.log(playlistNames);
+
         $scope.history = [];
+        $scope.tracks = [];
         if (!playlistNames) {
             return;
         }
@@ -42,38 +44,46 @@ app.controller('searchController', function ($scope, $http) {
         $http.get('/history', {
                 params: data
             })
-            .then(function (res) {
+            .then(function(res) {
                 $scope.history = res.data;
                 $scope.snapshotLoading = false;
                 console.log($scope.history);
             });
     }
-    $scope.showTracks = function (snapshot) {
-        console.log(snapshot);
+    $scope.loadChunk = function() {
+      document.getElementById("songs").scrollTop = 0;
         $scope.tracksLoading = true;
         $scope.tracks = [];
-        var offset = 0;
+        $http.get('/tracks', {
+                params: {
+                    tracks: $scope.snapshotSelected.tracks.slice($scope.offset, $scope.offset + 50)
+                }
+            })
+            .then(function(res) {
+                console.log(document.getElementById("songs").scrollTop);
+                $scope.tracksLoading = false;
+                $scope.tracks = res.data;
+            });
+    };
+    $scope.showTracks = function(snapshot) {
+        console.log(snapshot);
+        $scope.snapshotSelected = snapshot;
+        $scope.offset = 0;
 
-        function loadChunk() {
-            $http.get('/tracks', {
-                    params: {
-                        tracks: snapshot.tracks.slice(offset, offset + 50)
-                    }
-                })
-                .then(function (res) {
-                    console.log(res.data);
-                    $scope.tracksLoading = false;
-                    $scope.tracks = $scope.tracks.concat(res.data);
-                    if ($scope.tracks.length < snapshot.tracks.length) {
-                        offset += 50;
-                        return loadChunk();
-                    }
-
-
-                });
-        }
-        loadChunk();
+        $scope.loadChunk();
+    };
+    $scope.nextPage = function() {
+        $scope.offset += 50;
+        $scope.loadChunk();
     }
-
-
+    $scope.prevPage = function() {
+        $scope.offset -= 50;
+        $scope.loadChunk();
+    }
+    $scope.hasNext = function() {
+        return $scope.snapshotSelected && ($scope.offset + 50) < $scope.snapshotSelected.tracks.length;
+    }
+    $scope.hasPrev = function() {
+        return $scope.offset > 0;
+    }
 });
