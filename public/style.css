@@ -31,7 +31,13 @@
     overflow-y: auto;
 }
 .table > tbody > tr > td.playLink {
-  vertical-align: middle;
+    vertical-align: middle;
+}
+.artist-link:after {
+    content: ", ";
+}
+.artist-link:last-child:after {
+    content: "";
 }
 @font-face {
     font-family: "Light";

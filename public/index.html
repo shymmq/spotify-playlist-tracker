@@ -28,23 +28,22 @@
     </nav>
 
     <div class="col-xs-4 snapshots">
-        <input type="text" ng-model="playlistNames" placeholder="Search playlists..." uib-typeahead="result as result.names[0] for result in search($viewValue)" typeahead-loading="loading" typeahead-template-url="playlistNames.html" typeahead-no-results="noResults"
-            typeahead-wait-ms="300" typeahead-min-length="2" typeahead-on-select="showHistory($item)" class="form-control">
+        <input type="text" ng-model="playlistNames" placeholder="Search playlists..." uib-typeahead="result as result.names[0] for result in search($viewValue)" typeahead-loading="loading" typeahead-template-url="playlistNames.html" typeahead-no-results="noResults" typeahead-wait-ms="300" typeahead-min-length="2" typeahead-on-select="showHistory($item)" class="form-control">
         <i ng-show="loading" class="glyphicon glyphicon-refresh"></i>
         <div ng-show="noResults">
             <i class="glyphicon glyphicon-remove"></i> No Results Found
         </div>
         <div class="nav nav-sidebar list-group snapshot-list">
-            <a href="" ng-class="{active: snapshotSelected == snapshot}" " class="list-group-item " ng-repeat="snapshot in history " ng-click="showTracks(snapshot) ">
-                    <p class="list-group-item-heading ">{{snapshot.date | date:shortDate}}</p>
-                    <p class="list-group-item-text ">{{snapshot.name}}</p>
-                    <p class="list-group-item-text ">{{snapshot.tracks.length}} track(s)</p>
+            <a href="" ng-class="{active: snapshotSelected == snapshot}" class="list-group-item " ng-repeat="snapshot in history " ng-click="showTracks(snapshot) ">
+                <p class="list-group-item-heading ">{{snapshot.date | date:shortDate}}</p>
+                <p class="list-group-item-text ">{{snapshot.name}}</p>
+                <p class="list-group-item-text ">{{snapshot.tracks.length}} track(s)</p>
             </a>
         </div>
     </div>
     <div id="songs" class="col-xs-8 col-xs-offset-4 " ng-hide="tracks==null || tracks.length==0 ">
-      <a id="top "></a>
-        <table class="table table-striped content-table " >
+        <a id="top "></a>
+        <table class="table table-striped content-table ">
             <thead>
                 <th>Name
                 </th>
@@ -59,12 +58,12 @@
                 <tr ng-repeat="track in tracks ">
                     <td>{{track.name}}</td>
                     <td>
-                        <p ng-repeat="artist in track.artists ">{{artist.name}}</p>
+                        <a class="artist-link" href="{{artist.external_urls.spotify}}" ng-repeat="artist in track.artists " target="_blank">{{artist.name}}</a>
                     </td>
-                    <td>{{track.album.name}}</td>
-                    <td class="playLink">
+                    <td><a href="{{track.album.external_urls.spotify}}" target="_blank">{{track.album.name}}</a></td>
+                    <td class="playLink ">
                         <a href="{{track.external_urls.spotify}} " target="_blank ">
-                          <span class="glyphicon glyphicon-play ">
+                            <span class="glyphicon glyphicon-play ">
                           </span>
                         </a>
                     </td>
@@ -73,10 +72,10 @@
             </tbody>
         </table>
         <nav>
-          <ul class="pager ">
-            <li><a href=" " ng-show="hasPrev() " ng-click="prevPage() ">Previous</a></li>
-            <li><a href=" " ng-show="hasNext() " ng-click="nextPage() ">Next</a></li>
-          </ul>
+            <ul class="pager ">
+                <li><a href=" " ng-show="hasPrev() " ng-click="prevPage() ">Previous</a></li>
+                <li><a href=" " ng-show="hasNext() " ng-click="nextPage() ">Next</a></li>
+            </ul>
         </nav>
 
     </div>
