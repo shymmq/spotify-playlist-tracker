@@ -28,6 +28,8 @@ app.controller('searchController', function ($scope, $http) {
         return res
     };
     $scope.showHistory = function (playlistNames) {
+      console.log("showHistory");
+      console.log(playlistNames);
         $scope.history = [];
         if (!playlistNames) {
             return;
@@ -43,6 +45,7 @@ app.controller('searchController', function ($scope, $http) {
             .then(function (res) {
                 $scope.history = res.data;
                 $scope.snapshotLoading = false;
+                console.log($scope.history);
             });
     }
     $scope.showTracks = function (snapshot) {

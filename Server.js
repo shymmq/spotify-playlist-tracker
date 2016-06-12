@@ -41,7 +41,7 @@ router.get("/search", function (req, res) {
                     $regex: query,
                     $options: 'i'
                 }
-            }).limit(20).toArray();
+            }).limit(5).toArray();
         })
         .then(function (results) {
             console.log(results);

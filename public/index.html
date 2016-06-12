@@ -8,71 +8,15 @@
     <script src="angular-ui-bootstrap/dist/ui-bootstrap-tpls.js"></script>
     <script src="angular-touch/angular-touch.min.js"></script>
     <script src="core.js"></script>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <link rel="stylesheet" href="bootstrap/dist/css/bootstrap.css">
     <link rel="stylesheet" href="style.css">
-
-
 
 </head>
 
 <body ng-app="spotify-playlist-tracker" layout="row" ng-controller="searchController" layout-fill>
-    <!--
-    <md-toolbar>
-        <div class="md-toolbar-tools">
-            <h3>
-                <span>Playlists</span>
-            </h3>
-        </div>
-    </md-toolbar>
--->
-    <!--
-    <md-sidenav flex md-is-locked-open="true" class="md-sidenav-left md-whiteframe-5dp" md-component-id="left" md-disable-backdrop="" md-whiteframe="4">
-        <md-toolbar class="app-toolbar">
-            <p class="app-name">Playlist Tracker</p>
-        </md-toolbar>
-        <md-content flex>
-            <md-autocomplete md-delay="500" md-selected-item="search_query" md-search-text="searchText" md-items="item in search(searchText)" md-item-text="item.names" md-min-length="2" placeholder="Search playlists..." md-selected-item-change="showHistory(item)">
-                <md-item-template>
-                    <span md-highlight-text="searchText" md-highlight-flags="^i">{{item.names[0]}}</span>
-                </md-item-template>
-                <md-not-found>
-                    No states matching "{{searchText}}" were found.
-                </md-not-found>
-            </md-autocomplete>
-            <md-progress-circular md-mode="indeterminate" ng-show="snapshotLoading" class="center-spinner" md-diameter="100px"></md-progress-circular>
-            <md-list>
+    <script type="text/ng-template" id="customTemplate.html">
 
-                <md-list-item class="md-2-line" ng-repeat="snapshot in history">
-
-                    <div class="md-list-item-text">
-                        <h3><a href="" ng-click="showTracks(snapshot)">{{snapshot.date | date:shortDate}}</a></h3>
-                        <h4>{{snapshot.name}}</h4>
-                    </div>
-                    <md-divider inset=""></md-divider>
-                </md-list-item>
-
-            </md-list>
-        </md-content>
-    </md-sidenav>
-    <md-content flex>
-        <md-progress-circular md-mode="indeterminate" ng-show="tracksLoading" class="center-spinner" md-diameter="100px"></md-progress-circular>
-        <md-list>
-
-            <md-list-item class="md-2-line" ng-repeat="track in tracks">
-
-                <div class="md-list-item-text">
-                    <h3>{{track.name}}</h3>
-                    <h4>{{snapshot.name}}</h4>
-                </div>
-                <md-button class="md-icon-button md-secondary play-button" md-ink-ripple="#AAAAAA" aria-label="play_arrow">
-                    <md-icon md-svg-icon="img/icons/ic_play_arrow.svg"></md-icon>
-                </md-button>
-                <md-divider inset=""></md-divider>
-            </md-list-item>
-
-        </md-list>
-    </md-content>
--->
+    </script>
     <nav class="navbar navbar-inverse navbar-fixed-top">
         <div class="container-fluid">
             <div class="navbar-header">
@@ -82,15 +26,21 @@
             </div>
         </div>
     </nav>
+
     <div class="col-xs-4 snapshots">
-        <pre>Model: {{playlistNames | json}}</pre>
-        <input type="text" ng-model="snapshot" placeholder="Search playlists..." uib-typeahead="playlistNames for snapshot in search($viewValue)" typeahead-loading="loading" typeahead-no-results="noResults" class="form-control">
+        <input type="text" ng-model="playlistNames" placeholder="Search playlists..." uib-typeahead="result as result.names[0] for result in search($viewValue)" typeahead-loading="loading" typeahead-template-url="playlistNames.html" typeahead-no-results="noResults"
+            typeahead-wait-ms="300" typeahead-min-length="3" typeahead-on-select="showHistory($item)" class="form-control">
         <i ng-show="loading" class="glyphicon glyphicon-refresh"></i>
         <div ng-show="noResults">
             <i class="glyphicon glyphicon-remove"></i> No Results Found
         </div>
         <ul class="nav nav-sidebar">
-            <li ng-repeat="p in getTimes(10)">ababab</li>
+            <li ng-repeat="snapshot in history">
+                <div class="md-list-item-text">
+                    <p><a href="" ng-click="showTracks(snapshot)">{{snapshot.date | date:shortDate}}</a></p>
+                    <p>{{snapshot.name}}</p>
+                </div>
+            </li>
         </ul>
     </div>
     <div class="col-xs-8 col-xs-offset-4 songs">
@@ -105,10 +55,12 @@
                 </th>
             </thead>
             <tbody class="table-content-container">
-                <tr ng-repeat="p in getTimes(10)">
-                    <td>Lorem</td>
-                    <td>Ipsum</td>
-                    <td>Dolor</td>
+                <tr ng-repeat="track in tracks">
+                    <td>{{track.name}}</td>
+                    <td>
+                        <p ng-repeat="artist in track.artists">{{artist.name}}</p>
+                    </td>
+                    <td>{{track.album.name}}</td>
                 </tr>
             </tbody>
         </table>
