@@ -45,7 +45,7 @@ function transformPlaylist(playlist) {
 }
 
 function appendTracks(playlist, index, total) {
-    return spotify.all(spotify.api.getPlaylistTracks, [playlist.owner.id, playlist.id], 100)
+    return spotify.all(spotify.rootApi.getPlaylistTracks, [playlist.owner.id, playlist.id], 100)
         .then(function (tracks) {
             playlist.tracks = tracks.map(function (track) {
                 return track.track;
@@ -116,10 +116,10 @@ module.exports = {};
 
 module.exports.load = function () {
     start = new Date();
-    spotify.refreshAccessToken()
+    spotify.rootApi.refreshAccessToken()
         .then(function () {
             console.log('token refreshed');
-            return spotify.all(spotify.api.getUserPlaylists, [config.user_id]);
+            return spotify.all(spotify.rootApi.getUserPlaylists, [config.user_id]);
         })
         .then(displayTime)
         .then(filterNew)

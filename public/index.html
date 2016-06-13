@@ -11,7 +11,6 @@
     <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="bootstrap/dist/css/bootstrap.css">
     <link rel="stylesheet" href="style.css">
-
 </head>
 
 <body ng-app="spotify-playlist-tracker" layout="row" ng-controller="searchController" layout-fill>
@@ -22,16 +21,21 @@
                     Playlist Tracker
                 </div>
             </div>
+            <a href="login" class="navbar-text navbar-right" ng-hide="user">Log In <i class="fa fa-sign-in"></i></a>
+            <p class="navbar-text navbar-right" ng-show="user">
+              Logged as {{user.displayName}}
+              <a href="logout">Log out <i class="fa fa-sign-out"></i></a>
+            </p>
         </div>
     </nav>
 
     <div class="col-xs-3 snapshots">
-        <input type="text" ng-model="playlistNames" placeholder="Search playlists..." uib-typeahead="result as result.names[0] for result in search($viewValue)" typeahead-loading="loading" typeahead-template-url="playlistNames.html" typeahead-no-results="noResults"
-            typeahead-wait-ms="300" typeahead-min-length="2" typeahead-on-select="showHistory($item)" class="form-control">
+        <input id="search" type="text" ng-model="playlistNames" placeholder="Search playlists..." uib-typeahead="result as result.names[0] for result in search($viewValue)" typeahead-loading="loading" typeahead-template-url="playlistNames.html" typeahead-no-results="noResults"
+            typeahead-wait-ms="300" typeahead-min-length="2" typeahead-on-select="showHistory($item.id)" class="form-control">
         <i ng-show="loading" class="fa fa-refresh search-icon"></i>
         <i ng-hide="playlistNames == null || loading" ng-click="clearSearch()" class="fa fa-times search-icon"></i>
-        <div ng-show="noResults">
-            <i class="glyphicon glyphicon-remove"></i> No Results Found
+        <div ng-show="noResults" class="no-results">
+            No Results Found
         </div>
         <i class="fa fa-refresh fa-5x fa-fw center-spinner" ng-show="snapshotLoading"></i>
         <div class="nav nav-sidebar list-group snapshot-list">
@@ -45,6 +49,10 @@
     <div id="songs" class="col-xs-9 col-xs-offset-3 ">
         <i class="fa fa-refresh fa-5x fa-fw center-spinner" ng-show="tracksLoading"></i>
         <div ng-hide="tracks==null || tracks.length==0 ">
+            <div class="restore-container">
+              <a class="btn btn-primary" href="#" ng-show="user" ng-click="restore()">Restore!</a>
+              <p ng-hide="user">Log in to restore</p>
+            </div>
             <table class="table table-striped content-table ">
                 <thead>
                     <th>Name

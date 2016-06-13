@@ -48,6 +48,12 @@
   cursor: pointer;
   cursor: hand;
 }
+.no-results {
+  text-align: center;
+}
+.restore-container {
+  text-align: center;
+}
 @font-face {
     font-family: "Light";
     font-style: normal;

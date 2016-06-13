@@ -2,7 +2,30 @@
 'use strict';
 var app = angular.module('spotify-playlist-tracker', ['ui.bootstrap']);
 
+app.config(function($httpProvider) {
+    $httpProvider.interceptors.push(function($q, $window) {
+        return {
+            response: function(response) {
+                return response;
+            },
+            responseError: function(response) {
+                console.log(response);
+                if (response.status === 401) $window.location.href ='login';
+                return $q.reject(response);
+            }
+        };
+    });
+});
+
 app.controller('searchController', function($scope, $http, $location, $anchorScroll) {
+    $http.get('/user').then(function(res) {
+        if (res.data) {
+            $scope.user = res.data
+        }
+    }, function(err) {
+        console.log(err);
+    });
+
     $scope.search = function(query) {
         return $http.get('/search', {
                 params: {
@@ -12,22 +35,22 @@ app.controller('searchController', function($scope, $http, $location, $anchorScr
             .then(function(res) {
                 console.log(res.data);
                 return res.data;
+            }, function(err) {
+                console.log(err);
             });
     }
     $scope.clearSearch = function() {
-      $scope.playlistNames = null;
+        $scope.playlistNames = null;
+        document.getElementById("search").focus();
     }
-    $scope.showHistory = function(playlistNames) {
-        console.log("showHistory");
-        console.log(playlistNames);
-
+    $scope.showHistory = function(playlistId, snapshotId) {
+        $location.search('pid', playlistId);
+        console.log(playlistId);
+        $scope.playlistIdSelected = playlistId;
         $scope.history = [];
         $scope.tracks = [];
-        if (!playlistNames) {
-            return;
-        }
         var data = {
-            id: playlistNames.id
+            id: playlistId
         }
         $scope.snapshotLoading = true;
 
@@ -38,11 +61,21 @@ app.controller('searchController', function($scope, $http, $location, $anchorScr
                 $scope.history = res.data;
                 $scope.snapshotLoading = false;
                 console.log($scope.history);
-                $scope.showTracks($scope.history[0]);
+                if (snapshotId) {
+                    var snapshot = $scope.history.find(function(snapshot) {
+                        return snapshotId === snapshot.id;
+                    });
+                }
+                if (snapshot) {
+                    $scope.showTracks(snapshot);
+                } else {
+                    $scope.showTracks($scope.history[0]);
+                }
             });
     }
+
     $scope.loadChunk = function() {
-      document.getElementById("songs").scrollTop = 0;
+        document.getElementById("songs").scrollTop = 0;
         $scope.tracksLoading = true;
         $scope.tracks = [];
         $http.get('/tracks', {
@@ -58,6 +91,7 @@ app.controller('searchController', function($scope, $http, $location, $anchorScr
     };
     $scope.showTracks = function(snapshot) {
         console.log(snapshot);
+        $location.search('sid', snapshot.id);
         $scope.snapshotSelected = snapshot;
         $scope.offset = 0;
 
@@ -76,5 +110,16 @@ app.controller('searchController', function($scope, $http, $location, $anchorScr
     }
     $scope.hasPrev = function() {
         return $scope.offset > 0;
+    }
+    $scope.restore = function() {
+        $http.get('/restore', {
+            params: {
+                id: $scope.snapshotSelected.id
+            }
+        });
+    }
+    var params = $location.search();
+    if (params.pid) {
+        $scope.showHistory(params.pid, params.sid);
     }
 });

@@ -6,27 +6,32 @@ var SpotifyWebApi = require('spotify-web-api-node');
 var Queue = require('promise-queue');
 var queue = new Queue(1, Infinity);
 Queue.configure(Promise);
-var spotifyApi = new SpotifyWebApi({
-    clientId: config.client_id,
-    clientSecret: config.client_secret
-});
 
-spotifyApi.setRefreshToken(config.refresh_token);
-
-module.exports = {};
-
-module.exports.refreshAccessToken = function() {
-    return new Promise(function(resolve, reject) {
-        spotifyApi.refreshAccessToken()
-            .then(function(data) {
-                spotifyApi.setAccessToken(data.body.access_token);
-                resolve();
-            }, function(err) {
-                console.log('Could not refresh access token', err);
-                reject();
-            });
+ function newApi() {
+    var api = new SpotifyWebApi({
+        clientId: config.client_id,
+        clientSecret: config.client_secret,
+        redirectUri : 'http://localhost:3000/callback'
     });
-}
+    api.refresh = function() {
+        console.log(api.getRefreshToken());
+        return new Promise(function(resolve, reject) {
+            api.refreshAccessToken()
+                .then(function(data) {
+                    console.log('access', data.body.access_token);
+                    api.setAccessToken(data.body.access_token);
+                    resolve();
+                }, function(err) {
+                    console.log('Could not refresh access token', err);
+                    reject();
+                });
+        })
+    };
+    return api;
+};
+
+var rootApi = newApi();
+rootApi.setRefreshToken(config.refresh_token);
 
 module.exports.queue = function(promiseGenerator) {
     return queue.add(function() {
@@ -39,7 +44,7 @@ module.exports.queue = function(promiseGenerator) {
 };
 
 function loadPart(fn, args, page, loaded) {
-    return fn.apply(spotifyApi, args).then(function(response) {
+    return fn.apply(rootApi, args).then(function(response) {
         loaded = loaded.concat(response.body.items);
         if (response.body.next !== null) {
             page.offset += page.limit;
@@ -62,5 +67,6 @@ module.exports.all = function(fn, args, limit) {
             return loaded;
         });
 };
-
-module.exports.api = spotifyApi;
+module.exports = {};
+module.exports.newApi = newApi;
+module.exports.rootApi = rootApi;
