@@ -201,6 +201,8 @@ app.use("*", function(req, res) {
     res.sendFile(__dirname + "/public/404.html");
 });
 
-app.listen(80, function() {
-    console.log("Live at Port 80");
+var port = process.env.PORT || 3000;
+
+app.listen(port, function() {
+    console.log("Live at Port", port);
 });
