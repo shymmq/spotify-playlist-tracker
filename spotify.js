@@ -7,18 +7,18 @@ var Queue = require('promise-queue');
 var queue = new Queue(1, Infinity);
 Queue.configure(Promise);
 
- function newApi() {
+module.exports = {};
+
+function newApi() {
     var api = new SpotifyWebApi({
         clientId: config.client_id,
         clientSecret: config.client_secret,
-        redirectUri : config.app_url + '/callback'
+        redirectUri: config.app_url + '/callback'
     });
     api.refresh = function() {
-        console.log(api.getRefreshToken());
         return new Promise(function(resolve, reject) {
             api.refreshAccessToken()
                 .then(function(data) {
-                    console.log('access', data.body.access_token);
                     api.setAccessToken(data.body.access_token);
                     resolve();
                 }, function(err) {
@@ -67,6 +67,6 @@ module.exports.all = function(fn, args, limit) {
             return loaded;
         });
 };
-module.exports = {};
+
 module.exports.newApi = newApi;
 module.exports.rootApi = rootApi;

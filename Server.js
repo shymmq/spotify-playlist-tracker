@@ -17,7 +17,7 @@ var bodyParser = require('body-parser'),
     passport = require('passport'),
     SpotifyStrategy = require('./node_modules/passport-spotify/lib/passport-spotify/index').Strategy;
 var userTokens = [];
-//loader.load();
+var loadInProgress = false;
 passport.serializeUser(function(user, done) {
     done(null, user);
 });
@@ -32,7 +32,6 @@ passport.use(new SpotifyStrategy({
         callbackURL: config.app_url + '/callback'
     },
     function(accessToken, refreshToken, profile, done) {
-        console.log(refreshToken, profile.id);
         process.nextTick(function() {
             userTokens[profile.id] = refreshToken;
             return done(null, profile);
@@ -51,11 +50,17 @@ app.use(express.static(__dirname + '/public')); //serve static assets
 app.use(express.static(__dirname + '/node_modules')); //serve static assets
 
 router.get("/", function(req, res) {
-    // res.render("search");
     res.sendFile(__dirname + '/public/index.html');
 });
-router.get("/load", function(res, req) {
-    loader.load();
+router.get("/load", function(req, res) {
+    loadInProgress = true;
+    loader.load().then(function() {
+      loadInProgress = false;
+    });
+    res.redirect("/loadstatus");
+});
+router.get("/loadstatus", function(req, res) {
+    res.send('Load in progress: ' + loadInProgress);
 })
 router.get("/tracks", function(req, res) {
     var trackIds = req.query.tracks;
@@ -74,7 +79,6 @@ router.get("/tracks", function(req, res) {
             });
 });
 router.get("/search", function(req, res) {
-    console.log(req.user);
     var query = req.query.query;
     console.log("searching for ", query);
     return MongoClient.connect(config.db_url)
@@ -87,7 +91,6 @@ router.get("/search", function(req, res) {
             }).limit(5).toArray();
         })
         .then(function(results) {
-            //console.log(results);
             res.json(results);
         }, function(err) {
             console.log(err);
@@ -95,7 +98,7 @@ router.get("/search", function(req, res) {
 });
 router.get("/history", function(req, res) {
     var id = req.query.id;
-    console.log("searching hisodastry  for ", id);
+    console.log("searching history  for ", id);
     return MongoClient.connect(config.db_url)
         .then(function(db) {
             return db.collection("playlists").find({
@@ -105,7 +108,6 @@ router.get("/history", function(req, res) {
             }).toArray();
         })
         .then(function(results) {
-            console.log(results);
             res.json(results);
         }, function(err) {
             console.log(err);
@@ -187,11 +189,6 @@ app.get('/restore', auth, function(req, res) {
         })
 
 
-});
-
-router.use(function(req, res, next) {
-    console.log("/" + req.method);
-    next();
 });
 
 app.use("/", router);

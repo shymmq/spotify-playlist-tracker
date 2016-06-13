@@ -116,10 +116,9 @@ module.exports = {};
 
 module.exports.load = function () {
     start = new Date();
-    spotify.rootApi.refreshAccessToken()
+    return spotify.rootApi.refresh()
         .then(function () {
-            console.log('token refreshed');
-            return spotify.all(spotify.rootApi.getUserPlaylists, [config.user_id]);
+            return spotify.all(spotify.rootApi.getUserPlaylists, ['spotify']);
         })
         .then(displayTime)
         .then(filterNew)
