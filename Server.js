@@ -29,7 +29,7 @@ passport.deserializeUser(function(obj, done) {
 passport.use(new SpotifyStrategy({
         clientID: config.client_id,
         clientSecret: config.client_secret,
-        callbackURL: 'http://localhost:3000/callback'
+        callbackURL: config.app_url + '/callback'
     },
     function(accessToken, refreshToken, profile, done) {
         console.log(refreshToken, profile.id);
@@ -201,6 +201,6 @@ app.use("*", function(req, res) {
     res.sendFile(__dirname + "/public/404.html");
 });
 
-app.listen(80, function() {
-    console.log("Live at Port 80");
+app.listen(config.port, function() {
+    console.log("Live at Port", config.port);
 });

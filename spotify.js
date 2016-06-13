@@ -11,7 +11,7 @@ Queue.configure(Promise);
     var api = new SpotifyWebApi({
         clientId: config.client_id,
         clientSecret: config.client_secret,
-        redirectUri : 'http://localhost:3000/callback'
+        redirectUri : config.app_url + '/callback'
     });
     api.refresh = function() {
         console.log(api.getRefreshToken());
