@@ -17,12 +17,11 @@ var bodyParser = require('body-parser'),
     passport = require('passport'),
     SpotifyStrategy = require('./node_modules/passport-spotify/lib/passport-spotify/index').Strategy;
 var userTokens = [];
-var loadInProgress = false;
-passport.serializeUser(function(user, done) {
+passport.serializeUser(function (user, done) {
     done(null, user);
 });
 
-passport.deserializeUser(function(obj, done) {
+passport.deserializeUser(function (obj, done) {
     done(null, obj);
 });
 
@@ -31,8 +30,8 @@ passport.use(new SpotifyStrategy({
         clientSecret: config.client_secret,
         callbackURL: config.app_url + '/callback'
     },
-    function(accessToken, refreshToken, profile, done) {
-        process.nextTick(function() {
+    function (accessToken, refreshToken, profile, done) {
+        process.nextTick(function () {
             userTokens[profile.id] = refreshToken;
             return done(null, profile);
         });
@@ -41,7 +40,7 @@ app.use(cookieParser());
 app.use(bodyParser());
 app.use(methodOverride());
 app.use(session({
-    secret: 'ASdasdfasASDasddwtdfgdfg'
+    secret: 'ASdasdfasAroberttdfgdfg'
 }));
 app.use(passport.initialize());
 app.use(passport.session());
@@ -49,40 +48,41 @@ app.use(passport.session());
 app.use(express.static(__dirname + '/public')); //serve static assets
 app.use(express.static(__dirname + '/node_modules')); //serve static assets
 
-router.get("/", function(req, res) {
+router.get("/", function (req, res) {
     res.sendFile(__dirname + '/public/index.html');
 });
-router.get("/load", function(req, res) {
-    loadInProgress = true;
-    loader.load().then(function() {
-      loadInProgress = false;
-    });
+router.get("/load", function (req, res) {
+    loader.load();
     res.redirect("/loadstatus");
 });
-router.get("/loadstatus", function(req, res) {
-    res.send('Load in progress: ' + loadInProgress);
+router.get("/loadstatus", function (req, res) {
+    if (loader.status.err) {
+        res.status(500);
+    }
+    res.json(loader.status);
+
 })
-router.get("/tracks", function(req, res) {
+router.get("/tracks", function (req, res) {
     var trackIds = req.query.tracks;
     if (!(trackIds instanceof Array)) {
         trackIds = [trackIds];
     }
     spotify.rootApi.refresh()
-        .then(function() {
+        .then(function () {
             return spotify.rootApi.getTracks(trackIds);
         })
-        .then(function(response) {
+        .then(function (response) {
                 res.json(response.body.tracks);
             },
-            function(err) {
+            function (err) {
                 console.log(err);
             });
 });
-router.get("/search", function(req, res) {
+router.get("/search", function (req, res) {
     var query = req.query.query;
     console.log("searching for ", query);
     return MongoClient.connect(config.db_url)
-        .then(function(db) {
+        .then(function (db) {
             return db.collection("playlist-names").find({
                 names: {
                     $regex: query,
@@ -90,31 +90,31 @@ router.get("/search", function(req, res) {
                 }
             }).limit(5).toArray();
         })
-        .then(function(results) {
+        .then(function (results) {
             res.json(results);
-        }, function(err) {
+        }, function (err) {
             console.log(err);
         });
 });
-router.get("/history", function(req, res) {
+router.get("/history", function (req, res) {
     var id = req.query.id;
     console.log("searching history  for ", id);
     return MongoClient.connect(config.db_url)
-        .then(function(db) {
+        .then(function (db) {
             return db.collection("playlists").find({
                 id: id
             }).limit(20).sort({
                 date: -1
             }).toArray();
         })
-        .then(function(results) {
+        .then(function (results) {
             res.json(results);
-        }, function(err) {
+        }, function (err) {
             console.log(err);
         });
 });
 
-var auth = function(req, res, next) {
+var auth = function (req, res, next) {
     if (!req.isAuthenticated()) {
         res.send(401)
     } else {
@@ -126,65 +126,66 @@ app.get('/login',
     passport.authenticate('spotify', {
         scope: ['user-read-email', 'user-read-private', 'playlist-modify-private', 'playlist-modify-public']
     }),
-    function(req, res) {});
+    function (req, res) {});
 
 app.get('/callback',
     passport.authenticate('spotify', {
         failureRedirect: '/'
     }),
-    function(req, res) {
+    function (req, res) {
         res.redirect('/');
     });
 
-app.get('/logout', auth, function(req, res) {
+app.get('/logout', auth, function (req, res) {
     req.logout();
     res.redirect('/');
 });
 
-app.get('/user', function(req, res) {
+app.get('/user', function (req, res) {
     res.send(req.isAuthenticated() ? req.user : false);
 });
 
-app.get('/restore', auth, function(req, res) {
+app.get('/restore', auth, function (req, res) {
     var id = req.query.id;
     var api = spotify.newApi();
     var token = userTokens[req.user.id];
+    var name = req.query.name;
     api.setRefreshToken(token);
     MongoClient.connect(config.db_url)
-        .then(function(db) {
+        .then(function (db) {
             return db.collection("playlists").findOne({
                 id: id
             });
-        }).then(function(snapshot) {
+        }).then(function (snapshot) {
             return api.refresh()
-                .then(function() {
-                    return api.createPlaylist(req.user.id, snapshot.name, {
+                .then(function () {
+                    return api.createPlaylist(req.user.id, name, {
                         'public': false
                     });
-                }).then(function(newPlaylist) {
-                  console.log("added playlist", newPlaylist.body.id);
-                  var offset = 0;
-                  return function addChunk() {
-                    var chunk = snapshot.tracks.slice(offset, offset+50)
-                      .map(function(trackId) {
-                        return 'spotify:track:' + trackId;
-                      });
-                      console.log("adding chunk", offset);
-                    return api.addTracksToPlaylist(req.user.id, newPlaylist.body.id, chunk)
-                      .then(function() {
-                          console.log("added chunk", offset);
-                          offset += 50;
-                          if(offset < snapshot.tracks.length){
-                            return addChunk();
-                          } else {
-                            res.send(0);
-                          }
-                      }, function(err) {
-                          console.log('Something went wrong!', err);
-                      })
-                  }();
+                }).then(function (newPlaylist) {
+                    console.log("added playlist", newPlaylist.body.id);
+                    var offset = 0;
+                    return function addChunk() {
+                        var chunk = snapshot.tracks.slice(offset, offset + 50)
+                            .map(function (trackId) {
+                                return 'spotify:track:' + trackId;
+                            });
+                        console.log("adding chunk", offset);
+                        return api.addTracksToPlaylist(req.user.id, newPlaylist.body.id, chunk)
+                            .then(function () {
+                                console.log("added chunk", offset);
+                                offset += 50;
+                                if (offset < snapshot.tracks.length) {
+                                    return addChunk();
+                                } else {
+                                    res.send(0);
+                                }
+                            }, function (err) {
+                                console.log('Something went wrong!', err);
+                            })
+                    }();
                 });
-        }, function(err) {
+        }, function (err) {
             console.log('Something went wrong!', err);
         })
 
@@ -193,11 +194,11 @@ app.get('/restore', auth, function(req, res) {
 
 app.use("/", router);
 
-app.use("*", function(req, res) {
+app.use("*", function (req, res) {
     res.status(404);
     res.sendFile(__dirname + "/public/404.html");
 });
 
-app.listen(config.port, function() {
+app.listen(config.port, function () {
     console.log("Live at Port", config.port);
 });

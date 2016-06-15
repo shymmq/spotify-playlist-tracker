@@ -10,6 +10,8 @@
     <script src="core.js"></script>
     <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="bootstrap/dist/css/bootstrap.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Condensed" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -23,39 +25,44 @@
             </div>
             <a href="login" class="navbar-text navbar-right" ng-hide="user">Log In <i class="fa fa-sign-in"></i></a>
             <p class="navbar-text navbar-right" ng-show="user">
-              Logged as {{user.displayName}}
-              <a href="logout">Log out <i class="fa fa-sign-out"></i></a>
+                Logged as {{user.displayName}}
+                <a href="logout">Log out <i class="fa fa-sign-out"></i></a>
             </p>
         </div>
     </nav>
 
     <div class="col-xs-3 snapshots">
-        <input id="search" type="text" ng-model="playlistNames" placeholder="Search playlists..." uib-typeahead="result as result.names[0] for result in search($viewValue)" typeahead-loading="loading" typeahead-template-url="playlistNames.html" typeahead-no-results="noResults"
-            typeahead-wait-ms="300" typeahead-min-length="2" typeahead-on-select="showHistory($item.id)" class="form-control">
-        <i ng-show="loading" class="fa fa-refresh search-icon"></i>
+        <input id="search" type="text" ng-model="playlistNames" placeholder="Search playlists..." uib-typeahead="result as result.names[0] for result in search($viewValue)" typeahead-loading="loading" typeahead-template-url="playlistNames.html" typeahead-no-results="noResults" typeahead-wait-ms="300" typeahead-min-length="2" typeahead-on-select="showHistory($item.id)" class="form-control">
+        <!--        <i ng-show="loading" class="fa fa-refresh search-icon"></i>-->
+        <!--        <i class="material-icons search-icon fa-spin" ng-show="loading">refresh</i>-->
+        <div id="p2" class="mdl-progress mdl-js-progress mdl-progress__indeterminate" ng-show="loading"></div>
+
         <i ng-hide="playlistNames == null || loading" ng-click="clearSearch()" class="fa fa-times search-icon"></i>
         <div ng-show="noResults" class="no-results">
             No Results Found
         </div>
-        <i class="fa fa-refresh fa-5x fa-fw center-spinner" ng-show="snapshotLoading"></i>
+        <!--        <i class="fa fa-refresh fa-5x fa-fw center-spinner" ng-show="snapshotLoading"></i>-->
+        <i class="material-icons center-spinner fa-spin" ng-show="snapshotLoading">refresh</i>
         <div class="nav nav-sidebar list-group snapshot-list">
             <a href="" ng-class="{active: snapshotSelected == snapshot}" class="list-group-item " ng-repeat="snapshot in history " ng-click="showTracks(snapshot) ">
                 <p class="list-group-item-heading ">{{snapshot.date | date:shortDate}}</p>
                 <p class="list-group-item-text ">{{snapshot.name}}</p>
                 <p class="list-group-item-text ">{{snapshot.tracks.length}} track(s)</p>
+
+                <i class="material-icons restore-icon" ng-show="user" ng-click="restore()">restore</i>
             </a>
         </div>
     </div>
     <div id="songs" class="col-xs-9 col-xs-offset-3 ">
-        <i class="fa fa-refresh fa-5x fa-fw center-spinner" ng-show="tracksLoading"></i>
+        <i class="fa fa-refresh fa-5x fa-fw center-spinner " ng-show="tracksLoading "></i>
         <div ng-hide="tracks==null || tracks.length==0 ">
-            <div class="restore-container">
-              <a class="btn btn-primary" href="#" ng-show="user" ng-click="restore()">Restore!</a>
-              <p ng-hide="user">Log in to restore</p>
+            <div class="restore-container ">
+                <a class="btn btn-primary btn-restore " href="# " ng-show="user " ng-click="restore() ">RESTORE</a>
+                <p ng-hide="user ">Log in to restore</p>
             </div>
             <table class="table table-striped content-table ">
                 <thead>
-                    <th>Name
+                    <th class="title ">Name
                     </th>
                     <th>Artist
                     </th>
@@ -66,11 +73,11 @@
                 </thead>
                 <tbody class="table-content-container ">
                     <tr ng-repeat="track in tracks ">
-                        <td>{{track.name}}</td>
+                        <td class="title ">{{track.name}}</td>
                         <td>
-                            <a class="artist-link" href="{{artist.external_urls.spotify}}" ng-repeat="artist in track.artists " target="_blank">{{artist.name}}</a>
+                            <a class="artist-link " href="{{artist.external_urls.spotify}} " ng-repeat="artist in track.artists " target="_blank ">{{artist.name}}</a>
                         </td>
-                        <td><a href="{{track.album.external_urls.spotify}}" target="_blank">{{track.album.name}}</a></td>
+                        <td><a href="{{track.album.external_urls.spotify}} " target="_blank ">{{track.album.name}}</a></td>
                         <td class="playLink ">
                             <a href="{{track.external_urls.spotify}} " target="_blank ">
                                 <span class="glyphicon glyphicon-play ">

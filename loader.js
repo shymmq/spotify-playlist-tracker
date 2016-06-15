@@ -54,6 +54,7 @@ function appendTracks(playlist, index, total) {
             }).map(function (track) {
                 return track.id;
             });
+            report('tracks' + index)(playlist.tracks);
             console.log("extracted tracks", playlist.tracks.length);
             console.log('extracted ', (index + 1), '/', total);
             return playlist;
@@ -92,7 +93,9 @@ function aggregateNames() {
             return db.collection('playlists').aggregate([{
                 $group: {
                     _id: "$id",
-                    id: {$first:"$id"},
+                    id: {
+                        $first: "$id"
+                    },
                     names: {
                         $addToSet: "$name"
                     }
@@ -116,12 +119,17 @@ module.exports = {};
 
 module.exports.load = function () {
     start = new Date();
+    module.exports.status = {
+        finished: false
+    };
     return spotify.rootApi.refresh()
         .then(function () {
             return spotify.all(spotify.rootApi.getUserPlaylists, ['spotify']);
         })
+        .then(report('playlists'))
         .then(displayTime)
         .then(filterNew)
+        .then(report('filtered'))
         .then(displayTime)
         .then(function (playlists) {
             console.log('extracted playlists: ' + Object.keys(playlists).length);
@@ -142,5 +150,17 @@ module.exports.load = function () {
             console.log('finished');
         }, function (err) {
             console.log(err);
+            module.exports.status.error = err;
+        })
+        .then(function () {
+            module.exports.status.finished = true;
+            console.log(module.exports.status);
         });
 };
+
+function report(type) {
+    return function (items) {
+        module.exports.status[type] = items.length;
+        return items;
+    }
+}
