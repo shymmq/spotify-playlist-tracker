@@ -52,14 +52,23 @@ router.get("/", function (req, res) {
     res.sendFile(__dirname + '/public/index.html');
 });
 router.get("/load", function (req, res) {
-    loader.load();
-    res.redirect("/loadstatus");
+    if (req.query.secret != config.client_secret) {
+        res.status(666);
+        res.send("Unauthorized");
+    } else {
+        loader.load();
+        res.redirect("/loadstatus");
+    }
+
+
 });
 router.get("/loadstatus", function (req, res) {
+
     if (loader.status.err) {
         res.status(500);
     }
     res.json(loader.status);
+
 
 })
 router.get("/tracks", function (req, res) {
