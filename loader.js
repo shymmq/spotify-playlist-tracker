@@ -52,7 +52,7 @@ function appendTracks (playlist, index, total) {
           }).map(function (track) {
             return track.id
           })
-          report('tracks' + index)(playlist.tracks)
+          report('tracks')(playlist.tracks)
           console.log('extracted tracks', playlist.tracks.length)
           console.log('extracted ', (index + 1), '/', total)
           return playlist
@@ -117,7 +117,10 @@ module.exports = {}
 module.exports.load = function () {
   status = {
     finished: false,
-    start: new Date()
+    start: new Date(),
+    playlists: 0,
+    filtered: 0,
+    tracks: 0
   }
   return spotify.rootApi.refresh()
         .then(function () {
@@ -175,7 +178,7 @@ module.exports.loadStatus = function () {
 
 function report (type) {
   return function (items) {
-    status[type] = items.length
+    status[type] += items.length
     return items
   }
 }
