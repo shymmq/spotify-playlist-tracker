@@ -7,46 +7,20 @@ var MongoClient = require('mongodb').MongoClient
 var config = require('./config')
 var spotify = require('./spotify')
 var loader = require('./loader')
+var auth = require('./auth')
 var bodyParser = require('body-parser')
 var cookieParser = require('cookie-parser')
 var methodOverride = require('method-override')
-var session = require('express-session')
-var passport = require('passport')
-var SpotifyStrategy = require('./node_modules/passport-spotify/lib/passport-spotify/index').Strategy
-var userTokens = []
 var path = require('path')
 
-passport.serializeUser(function (user, done) {
-  done(null, user)
-})
-
-passport.deserializeUser(function (obj, done) {
-  done(null, obj)
-})
-
-passport.use(new SpotifyStrategy({
-  clientID: config.client_id,
-  clientSecret: config.client_secret,
-  callbackURL: config.app_url + '/callback'
-},
-    function (accessToken, refreshToken, profile, done) {
-      process.nextTick(function () {
-        userTokens[profile.id] = refreshToken
-        return done(null, profile)
-      })
-    }))
 app.use(cookieParser())
 app.use(bodyParser())
 app.use(methodOverride())
-app.use(session({
-  secret: 'ASdasdfasAroberttdfgdfg'
-}))
-app.use(passport.initialize())
-app.use(passport.session())
 
 app.use(express.static(path.join(__dirname, '/public'))) // serve static assets
 app.use(express.static(path.join(__dirname, '/node_modules'))) // serve static assets
 
+auth.routes(app)
 router.get('/', function (req, res) {
   res.sendFile(path.join(__dirname, '/public/index.html'))
 })
@@ -76,9 +50,10 @@ router.get('/tracks', function (req, res) {
         .then(function () {
           return spotify.rootApi.getTracks(trackIds)
         })
-        .then(function (response) {
-          res.json(response.body.tracks)
-        },
+        .then(
+            function (response) {
+              res.json(response.body.tracks)
+            },
             function (err) {
               console.log(err)
             })
@@ -119,43 +94,11 @@ router.get('/history', function (req, res) {
         })
 })
 
-var auth = function (req, res, next) {
-  if (!req.isAuthenticated()) {
-    res.send(401)
-  } else {
-    next()
-  }
-}
-
-app.get('/login',
-    passport.authenticate('spotify', {
-      scope: ['user-read-email', 'user-read-private', 'playlist-modify-private', 'playlist-modify-public']
-    }),
-    function (req, res) {})
-
-app.get('/callback',
-    passport.authenticate('spotify', {
-      failureRedirect: '/'
-    }),
-    function (req, res) {
-      res.redirect('/')
-    })
-
-app.get('/logout', auth, function (req, res) {
-  req.logout()
-  res.redirect('/')
-})
-
-app.get('/user', function (req, res) {
-  res.send(req.isAuthenticated() ? req.user : false)
-})
-
-app.get('/restore', auth, function (req, res) {
+app.get('/restore', auth.isAuthorized, function (req, res) {
   var id = req.query.id
   var api = spotify.newApi()
-  var token = userTokens[req.user.id]
   var name = req.query.name
-  api.setRefreshToken(token)
+  api.setRefreshToken(req.user.refreshToken)
   MongoClient.connect(config.db_url)
         .then(function (db) {
           return db.collection('playlists').findOne({
