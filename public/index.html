@@ -2,11 +2,11 @@
 
 <head>
     <title>Playlist Tracker</title>
-
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
     <script src="angular/angular.min.js"></script>
     <script src="angular-animate/angular-animate.min.js"></script>
     <script src="angular-ui-bootstrap/dist/ui-bootstrap-tpls.js"></script>
-
+    <script src="bootstrap/dist/js/bootstrap.min.js"></script>
     <script src="angular-touch/angular-touch.min.js"></script>
     <script src="angular-cookies/angular-cookies.min.js"></script>
     <script src="core.js"></script>
@@ -35,36 +35,45 @@
                 <div class="navbar-brand">
                     Playlist Tracker
                 </div>
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#dropdownMenu" aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
             </div>
-            <div class="navbar-right">
-                <a href="" class="navbar-text" ng-hide="user" ng-click="login()">Log In <i class="fa fa-sign-in"></i></a>
-                <p class="navbar-text" ng-show="user">
+            <div class="navbar-collapse collapse" id="dropdownMenu">
+                <p class="navbar-text navbar-right" ng-hide="user">
+                    <a href="" ng-click="login()">Log In <i class="fa fa-sign-in"></i></a>
+                </p>
+                <p class="navbar-text navbar-right" ng-show="user">
                     Logged as {{user.displayName}}
                     <a href="" ng-click="logout()">Log out <i class="fa fa-sign-out"></i></a>
                 </p>
+                </li>
+                </ul>
             </div>
+
         </div>
     </nav>
 
-    <div class="col-xs-3 snapshots">
+    <div class="col-sm-3 snapshots">
         <input id="search" type="text" ng-model="playlistNames" placeholder="Search playlists..." uib-typeahead="result as result.names[0] for result in search($viewValue)" typeahead-loading="loading" typeahead-template-url="playlistNames.html" typeahead-no-results="noResults"
             typeahead-wait-ms="300" typeahead-min-length="2" typeahead-on-select="showHistory($item.id)" class="form-control">
-        <!--        <i ng-show="loading" class="fa fa-refresh search-icon"></i>-->
-        <!--        <i class="material-icons search-icon fa-spin" ng-show="loading">refresh</i>-->
         <div id="p2" class="mdl-progress mdl-js-progress mdl-progress__indeterminate" ng-show="loading"></div>
 
         <i ng-hide="playlistNames == null || loading" ng-click="clearSearch()" class="fa fa-times search-icon"></i>
         <div ng-show="noResults" class="no-results">
             No Results Found
         </div>
-        <span us-spinner spinner-on='snapshotLoading'></span>
         <div class="nav nav-sidebar list-group snapshot-list">
+            <span us-spinner spinner-on='snapshotLoading'></span>
             <a href="" ng-class="{active: snapshotSelected == snapshot}" class="list-group-item " ng-repeat="snapshot in history " ng-click="showTracks(snapshot) ">
                 {{snapshot.date | date:shortDate}}
             </a>
         </div>
     </div>
-    <div id="songs" class="col-xs-9 col-xs-offset-3 ">
+    <div id="songs" class="col-sm-9 col-sm-offset-3 ">
         <span us-spinner spinner-on='tracksLoading'></span>
         <div ng-hide="tracks==null || tracks.length==0 ">
             <div class="snapshot-header">

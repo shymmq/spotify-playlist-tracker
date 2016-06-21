@@ -2,6 +2,9 @@
     font-family: Light;
     margin-left: 1rem;
 }
+.navbar-right {
+    margin-right: 0px !important;
+}
 .center-spinner {
     position: absolute;
     top: 50%;
@@ -67,4 +70,19 @@
     font-style: normal;
     font-weight: 500;
     src: url("https://sp-bootstrap.global.ssl.fastly.net/7.2.0/fonts/circular-medium.woff2") format("woff2"), url("https://sp-bootstrap.global.ssl.fastly.net/7.2.0/fonts/circular-medium.woff") format("woff");
+}
+@media (max-width: 768px){
+    .snapshots {
+        position: relative;
+        top: 0px;
+        min-height: 250px;
+    }
+    #songs {
+        top:0px;
+        position: relative;
+        min-height: 250px;
+    }
+    .navbar{
+        position: relative
+    }
 }
