@@ -6,19 +6,28 @@
     <script src="angular/angular.min.js"></script>
     <script src="angular-animate/angular-animate.min.js"></script>
     <script src="angular-ui-bootstrap/dist/ui-bootstrap-tpls.js"></script>
+
     <script src="angular-touch/angular-touch.min.js"></script>
     <script src="angular-cookies/angular-cookies.min.js"></script>
     <script src="core.js"></script>
     <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="bootstrap/dist/css/bootstrap.css">
+    <link rel="stylesheet" href="ng-toast/dist/ngToast.min.css">
+    <script src="angular-sanitize/angular-sanitize.min.js"></script>
+    <script src="ng-toast/dist/ngToast.min.js"></script>
     <link href="https://fonts.googleapis.com/css?family=Roboto+Condensed" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="ladda/dist/ladda-themeless.min.css">
+    <script src="ladda/js/spin.js"></script>
+    <script src="ladda/js/ladda.js"></script>
+    <script src="angular-ladda/dist/angular-ladda.min.js"></script>
     <script src="spin.js/spin.js"></script>
     <script src="angular-spinner/angular-spinner.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body ng-app="spotify-playlist-tracker" layout="row" ng-controller="searchController" layout-fill>
+    <toast></toast>
     <nav class="navbar navbar-inverse navbar-fixed-top">
         <div class="container-fluid">
             <div class="navbar-header">
@@ -50,19 +59,17 @@
         <span us-spinner spinner-on='snapshotLoading'></span>
         <div class="nav nav-sidebar list-group snapshot-list">
             <a href="" ng-class="{active: snapshotSelected == snapshot}" class="list-group-item " ng-repeat="snapshot in history " ng-click="showTracks(snapshot) ">
-                <p class="list-group-item-heading ">{{snapshot.date | date:shortDate}}</p>
-                <p class="list-group-item-text ">{{snapshot.name}}</p>
-                <p class="list-group-item-text ">{{snapshot.tracks.length}} track(s)</p>
-
-                <i class="material-icons restore-icon" ng-show="user" ng-click="restore()">restore</i>
+                {{snapshot.date | date:shortDate}}
             </a>
         </div>
     </div>
     <div id="songs" class="col-xs-9 col-xs-offset-3 ">
         <span us-spinner spinner-on='tracksLoading'></span>
         <div ng-hide="tracks==null || tracks.length==0 ">
-            <div class="restore-container ">
-                <a class="btn btn-primary btn-restore " href="" ng-click="restore() ">RESTORE</a>
+            <div class="snapshot-header">
+                <h3>{{snapshotSelected.name}}</h3>
+                <p>{{snapshotSelected.date | date:shortDate}}, {{snapshotSelected.tracks.length}} track(s)</p>
+                <a class="btn btn-primary" href="" ng-click="restore()" ladda="restoring">Restore</a>
             </div>
             <table class="table table-striped content-table ">
                 <thead>

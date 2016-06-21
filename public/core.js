@@ -1,6 +1,6 @@
 /*global angular*/
 'use strict'
-var app = angular.module('spotify-playlist-tracker', ['ui.bootstrap', 'ngCookies', 'angularSpinner'])
+var app = angular.module('spotify-playlist-tracker', ['ui.bootstrap', 'ngCookies', 'angularSpinner', 'ngToast', 'angular-ladda'])
 
 app.factory('stateService', function($cookies, $window, $location) {
     var service = {}
@@ -42,7 +42,7 @@ app.config(function($httpProvider) {
     })
 })
 
-app.controller('searchController', function($scope, $http, $anchorScroll, stateService) {
+app.controller('searchController', function($scope, $http, $anchorScroll, stateService, ngToast) {
     $scope.login = function() {
         stateService.redirect('login')
     }
@@ -154,10 +154,18 @@ app.controller('searchController', function($scope, $http, $anchorScroll, stateS
             stateService.redirect('login')
         } else {
             var name = prompt('Playlist name:', $scope.snapshotSelected.name)
+            $scope.restoring = true
             $http.get('/restore', {
                 params: {
                     id: $scope.snapshotSelected.id,
                     name: name
+                }
+            }).then(function(response) {
+                $scope.restoring = false
+                if (response.data) {
+                    ngToast.create('Restored!')
+                } else {
+                    ngToast.danger('Something went wrong!')
                 }
             })
         }
