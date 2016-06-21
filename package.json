@@ -23,7 +23,7 @@
     "install": "^0.8.1",
     "method-override": "^2.3.6",
     "mongodb": "^2.1.20",
-    "ngtoast": "^2.0.1",
+    "ng-toast": "^2.0.0",
     "npm": "^3.9.5",
     "passport": "^0.3.2",
     "passport-spotify": "^0.3.0",
