@@ -7,6 +7,7 @@
     <script src="angular-animate/angular-animate.min.js"></script>
     <script src="angular-ui-bootstrap/dist/ui-bootstrap-tpls.js"></script>
     <script src="angular-touch/angular-touch.min.js"></script>
+    <script src="angular-cookies/angular-cookies.min.js"></script>
     <script src="core.js"></script>
     <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="bootstrap/dist/css/bootstrap.css">
@@ -23,16 +24,19 @@
                     Playlist Tracker
                 </div>
             </div>
-            <a href="login" class="navbar-text navbar-right" ng-hide="user">Log In <i class="fa fa-sign-in"></i></a>
-            <p class="navbar-text navbar-right" ng-show="user">
-                Logged as {{user.displayName}}
-                <a href="logout">Log out <i class="fa fa-sign-out"></i></a>
-            </p>
+            <div class="navbar-right">
+                <a href="" class="navbar-text" ng-hide="user" ng-click="login()">Log In <i class="fa fa-sign-in"></i></a>
+                <p class="navbar-text" ng-show="user">
+                    Logged as {{user.displayName}}
+                    <a href="" ng-click="logout()">Log out <i class="fa fa-sign-out"></i></a>
+                </p>
+            </div>
         </div>
     </nav>
 
     <div class="col-xs-3 snapshots">
-        <input id="search" type="text" ng-model="playlistNames" placeholder="Search playlists..." uib-typeahead="result as result.names[0] for result in search($viewValue)" typeahead-loading="loading" typeahead-template-url="playlistNames.html" typeahead-no-results="noResults" typeahead-wait-ms="300" typeahead-min-length="2" typeahead-on-select="showHistory($item.id)" class="form-control">
+        <input id="search" type="text" ng-model="playlistNames" placeholder="Search playlists..." uib-typeahead="result as result.names[0] for result in search($viewValue)" typeahead-loading="loading" typeahead-template-url="playlistNames.html" typeahead-no-results="noResults"
+            typeahead-wait-ms="300" typeahead-min-length="2" typeahead-on-select="showHistory($item.id)" class="form-control">
         <!--        <i ng-show="loading" class="fa fa-refresh search-icon"></i>-->
         <!--        <i class="material-icons search-icon fa-spin" ng-show="loading">refresh</i>-->
         <div id="p2" class="mdl-progress mdl-js-progress mdl-progress__indeterminate" ng-show="loading"></div>
@@ -57,8 +61,7 @@
         <i class="fa fa-refresh fa-5x fa-fw center-spinner " ng-show="tracksLoading "></i>
         <div ng-hide="tracks==null || tracks.length==0 ">
             <div class="restore-container ">
-                <a class="btn btn-primary btn-restore " href="# " ng-show="user " ng-click="restore() ">RESTORE</a>
-                <p ng-hide="user ">Log in to restore</p>
+                <a class="btn btn-primary btn-restore " href="" ng-click="restore() ">RESTORE</a>
             </div>
             <table class="table table-striped content-table ">
                 <thead>
