@@ -1,6 +1,6 @@
 /*global angular*/
 'use strict'
-var app = angular.module('spotify-playlist-tracker', ['ui.bootstrap', 'ngCookies'])
+var app = angular.module('spotify-playlist-tracker', ['ui.bootstrap', 'ngCookies', 'angularSpinner'])
 
 app.factory('stateService', function($cookies, $window, $location) {
     var service = {}

@@ -13,6 +13,8 @@
     <link rel="stylesheet" href="bootstrap/dist/css/bootstrap.css">
     <link href="https://fonts.googleapis.com/css?family=Roboto+Condensed" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="spin.js/spin.js"></script>
+    <script src="angular-spinner/angular-spinner.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -45,8 +47,7 @@
         <div ng-show="noResults" class="no-results">
             No Results Found
         </div>
-        <!--        <i class="fa fa-refresh fa-5x fa-fw center-spinner" ng-show="snapshotLoading"></i>-->
-        <i class="material-icons center-spinner fa-spin" ng-show="snapshotLoading">refresh</i>
+        <span us-spinner spinner-on='snapshotLoading'></span>
         <div class="nav nav-sidebar list-group snapshot-list">
             <a href="" ng-class="{active: snapshotSelected == snapshot}" class="list-group-item " ng-repeat="snapshot in history " ng-click="showTracks(snapshot) ">
                 <p class="list-group-item-heading ">{{snapshot.date | date:shortDate}}</p>
@@ -58,7 +59,7 @@
         </div>
     </div>
     <div id="songs" class="col-xs-9 col-xs-offset-3 ">
-        <i class="fa fa-refresh fa-5x fa-fw center-spinner " ng-show="tracksLoading "></i>
+        <span us-spinner spinner-on='tracksLoading'></span>
         <div ng-hide="tracks==null || tracks.length==0 ">
             <div class="restore-container ">
                 <a class="btn btn-primary btn-restore " href="" ng-click="restore() ">RESTORE</a>
