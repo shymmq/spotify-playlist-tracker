@@ -9,6 +9,7 @@
     "angular-animate": "^1.5.6",
     "angular-cookies": "^1.5.7",
     "angular-ladda": "^0.3.3",
+    "angular-prompt": "^1.2.0",
     "angular-sanitize": "^1.5.7",
     "angular-spinner": "^0.8.1",
     "angular-touch": "^1.5.6",
